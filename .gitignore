@@ -1,3 +1,4 @@
 .env
 venv
+storage
 __pycache__
