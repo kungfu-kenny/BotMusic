@@ -1,5 +1,5 @@
 from telegram.telegram_bot import bot
-from telegram.telegram_ui import start_message
+import telegram.telegram_ui
 
 try:
     bot.polling()
