@@ -1,6 +1,8 @@
 from telegram.telegram_bot import bot
 import telegram.telegram_ui
+from db.db_creator import SessionCreator
 
+SessionCreator()
 try:
     bot.polling()
 except Exception as e:

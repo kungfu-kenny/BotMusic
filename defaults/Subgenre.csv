@@ -1,0 +1,131 @@
+~id,~label,name
+s_rock___roll,subgenre,Rock & Roll
+s_psychedelic_rock,subgenre,Psychedelic Rock
+s_pop_rock,subgenre,Pop Rock
+s_folk_rock,subgenre,Folk Rock
+s_blues_rock,subgenre,Blues Rock
+s_soul,subgenre,Soul
+s_classic_rock,subgenre,Classic Rock
+s_punk,subgenre,Punk
+s_new_wave,subgenre,New Wave
+s_rhythm___blues,subgenre,Rhythm & Blues
+s_experimental,subgenre,Experimental
+s_modal,subgenre,Modal
+s_garage_rock,subgenre,Garage Rock
+s_art_rock,subgenre,Art Rock
+s_acoustic,subgenre,Acoustic
+s_ballad,subgenre,Ballad
+s_alternative_rock,subgenre,Alternative Rock
+s_grunge,subgenre,Grunge
+s_free_improvisation,subgenre,Free Improvisation
+s_disco,subgenre,Disco
+s_delta_blues,subgenre,Delta Blues
+s_hard_rock,subgenre,Hard Rock
+s_mod,subgenre,Mod
+s_prog_rock,subgenre,Prog Rock
+s_folk,subgenre,Folk
+s_glam,subgenre,Glam
+s_soft_rock,subgenre,Soft Rock
+s_beat,subgenre,Beat
+s_soundtrack,subgenre,Soundtrack
+s_modern_classical,subgenre,Modern Classical
+s_contemporary,subgenre,Contemporary
+s_score,subgenre,Score
+s_reggae,subgenre,Reggae
+s_roots_reggae,subgenre,Roots Reggae
+s_free_jazz,subgenre,Free Jazz
+s_hard_bop,subgenre,Hard Bop
+s_conscious,subgenre,Conscious
+s_big_band,subgenre,Big Band
+s_soul_jazz,subgenre,Soul-Jazz
+s_electric_blues,subgenre,Electric Blues
+s_rockabilly,subgenre,Rockabilly
+s_southern_rock,subgenre,Southern Rock
+s_none,subgenre,None
+s_dialogue,subgenre,Dialogue
+s_field_recording,subgenre,Field Recording
+s_avantgarde,subgenre,Avantgarde
+s_funk,subgenre,Funk
+s_heavy_metal,subgenre,Heavy Metal
+s_synth_pop,subgenre,Synth-pop
+s_arena_rock,subgenre,Arena Rock
+s_doo_wop,subgenre,Doo Wop
+s_contemporary_jazz,subgenre,Contemporary Jazz
+s_idm,subgenre,IDM
+s_african,subgenre,African
+s_afrobeat,subgenre,Afrobeat
+s_zydeco,subgenre,Zydeco
+s_country_rock,subgenre,Country Rock
+s_country,subgenre,Country
+s_ska,subgenre,Ska
+s_reggae_pop,subgenre,Reggae-Pop
+s_fusion,subgenre,Fusion
+s_gospel,subgenre,Gospel
+s_cha_cha,subgenre,Cha-Cha
+s_psychedelic,subgenre,Psychedelic
+s_rocksteady,subgenre,Rocksteady
+s_thug_rap,subgenre,Thug Rap
+s_indie_rock,subgenre,Indie Rock
+s_gangsta,subgenre,Gangsta
+s_bayou_funk,subgenre,Bayou Funk
+s_chicago_blues,subgenre,Chicago Blues
+s_louisiana_blues,subgenre,Louisiana Blues
+s_jazz_rock,subgenre,Jazz-Rock
+s_afro_cuban,subgenre,Afro-Cuban
+s_pop_rap,subgenre,Pop Rap
+s_post_punk,subgenre,Post-Punk
+s_thrash,subgenre,Thrash
+s_speed_metal,subgenre,Speed Metal
+s_power_pop,subgenre,Power Pop
+s_vocal,subgenre,Vocal
+s_p_funk,subgenre,P.Funk
+s_europop,subgenre,Europop
+s_acid_rock,subgenre,Acid Rock
+s_pop_punk,subgenre,Pop Punk
+s_harmonica_blues,subgenre,Harmonica Blues
+s_industrial,subgenre,Industrial
+s_shoegaze,subgenre,Shoegaze
+s_piano_blues,subgenre,Piano Blues
+s_hardcore_hip_hop,subgenre,Hardcore Hip-Hop
+s_horrorcore,subgenre,Horrorcore
+s_country_blues,subgenre,Country Blues
+s_musique_concr_te,subgenre,Musique Concr?te
+s_symphonic_rock,subgenre,Symphonic Rock
+s_parody,subgenre,Parody
+s_ambient,subgenre,Ambient
+s_electro,subgenre,Electro
+s_rnb_swing,subgenre,RnB/Swing
+s_downtempo,subgenre,Downtempo
+s_noise,subgenre,Noise
+s_cajun,subgenre,Cajun
+s_contemporary_r_b,subgenre,Contemporary R&B
+s_emo,subgenre,Emo
+s_hip_hop,subgenre,Hip Hop
+s_abstract,subgenre,Abstract
+s_easy_listening,subgenre,Easy Listening
+s_funk_metal,subgenre,Funk Metal
+s_lo_fi,subgenre,Lo-Fi
+s_spoken_word,subgenre,Spoken Word
+s_hardcore,subgenre,Hardcore
+s_breakbeat,subgenre,Breakbeat
+s_leftfield,subgenre,Leftfield
+s_aor,subgenre,AOR
+s_latin_jazz,subgenre,Latin Jazz
+s_crunk,subgenre,Crunk
+s_house,subgenre,House
+s_techno,subgenre,Techno
+s_honky_tonk,subgenre,Honky Tonk
+s_jump_blues,subgenre,Jump Blues
+s_brit_pop,subgenre,Brit Pop
+s_reggae_gospel,subgenre,Reggae Gospel
+s_grime,subgenre,Grime
+s_bollywood,subgenre,Bollywood
+s_dancehall,subgenre,Dancehall
+s_dub,subgenre,Dub
+s_trip_hop,subgenre,Trip Hop
+s_post_rock,subgenre,Post Rock
+s_screw,subgenre,Screw
+s_celtic,subgenre,Celtic
+s_bossa_nova,subgenre,Bossa Nova
+s_modern_electric_blues,subgenre,Modern Electric Blues
+s_neo_soul,subgenre,Neo Soul

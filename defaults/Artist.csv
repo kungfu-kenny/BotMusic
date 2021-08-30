@@ -1,0 +1,290 @@
+~id,~label,name
+a_the_beatles,artist,The Beatles
+a_the_beach_boys,artist,The Beach Boys
+a_bob_dylan,artist,Bob Dylan
+a_marvin_gaye,artist,Marvin Gaye
+a_the_rolling_stones,artist,The Rolling Stones
+a_the_clash,artist,The Clash
+a_elvis_presley,artist,Elvis Presley
+a_miles_davis,artist,Miles Davis
+a_the_velvet_underground,artist,The Velvet Underground
+a_the_jimi_hendrix_experience,artist,The Jimi Hendrix Experience
+a_nirvana,artist,Nirvana
+a_bruce_springsteen,artist,Bruce Springsteen
+a_van_morrison,artist,Van Morrison
+a_michael_jackson,artist,Michael Jackson
+a_chuck_berry,artist,Chuck Berry
+a_robert_johnson,artist,Robert Johnson
+a_john_lennon___plastic_ono_band,artist,John Lennon / Plastic Ono Band
+a_stevie_wonder,artist,Stevie Wonder
+a_james_brown,artist,James Brown
+a_fleetwood_mac,artist,Fleetwood Mac
+a_u2,artist,U2
+a_the_who,artist,The Who
+a_led_zeppelin,artist,Led Zeppelin
+a_joni_mitchell,artist,Joni Mitchell
+a_ramones,artist,Ramones
+a_the_band,artist,The Band
+a_david_bowie,artist,David Bowie
+a_carole_king,artist,Carole King
+a_eagles,artist,Eagles
+a_muddy_waters,artist,Muddy Waters
+a_love,artist,Love
+a_sex_pistols,artist,Sex Pistols
+a_the_doors,artist,The Doors
+a_pink_floyd,artist,Pink Floyd
+a_patti_smith,artist,Patti Smith
+a_bob_marley___the_wailers,artist,Bob Marley & The Wailers
+a_john_coltrane,artist,John Coltrane
+a_public_enemy,artist,Public Enemy
+a_the_allman_brothers_band,artist,The Allman Brothers Band
+a_little_richard,artist,Little Richard
+a_simon___garfunkel,artist,Simon & Garfunkel
+a_al_green,artist,Al Green
+a_ray_charles,artist,Ray Charles
+a_creedence_clearwater_revival,artist,Creedence Clearwater Revival
+a_captain_beefheart___his_magic_band,artist,Captain Beefheart & His Magic Band
+a_sly___the_family_stone,artist,Sly & The Family Stone
+a_guns_n__roses,artist,Guns N' Roses
+a_phil_spector,artist,Phil Spector
+a_radiohead,artist,Radiohead
+a_billy_joel,artist,Billy Joel
+a_paul_simon,artist,Paul Simon
+a_curtis_mayfield,artist,Curtis Mayfield
+a_neil_young,artist,Neil Young
+a_prince_and_the_revolution,artist,Prince and the Revolution
+a_ac_dc,artist,AC/DC
+a_otis_redding,artist,Otis Redding
+a_john_lennon,artist,John Lennon
+a_aretha_franklin,artist,Aretha Franklin
+a_johnny_cash,artist,Johnny Cash
+a_dusty_springfield,artist,Dusty Springfield
+a_elton_john,artist,Elton John
+a_buddy_holly,artist,Buddy Holly
+a_prince,artist,Prince
+a_hank_williams,artist,Hank Williams
+a_elvis_costello,artist,Elvis Costello
+a_the_zombies,artist,The Zombies
+a_frank_sinatra,artist,Frank Sinatra
+a_cream,artist,Cream
+a_james_taylor,artist,James Taylor
+a_sam_cooke,artist,Sam Cooke
+a_the_mamas_and_the_papas,artist,The Mamas and the Papas
+a_derek_and_the_dominos,artist,Derek and the Dominos
+a_kanye_west,artist,Kanye West
+a_etta_james,artist,Etta James
+a_the_byrds,artist,The Byrds
+a_various_artists,artist,Various Artists
+a_run_d_m_c_,artist,Run D.M.C.
+a_moby_grape,artist,Moby Grape
+a_janis_joplin,artist,Janis Joplin
+a_the_wailers,artist,The Wailers
+a_iggy_and_the_stooges,artist,Iggy and The Stooges
+a_talking_heads,artist,Talking Heads
+a_television,artist,Television
+a_black_sabbath,artist,Black Sabbath
+a_the_notorious_b_i_g_,artist,The Notorious B.I.G.
+a_pavement,artist,Pavement
+a_the_replacements,artist,The Replacements
+a_dr__dre,artist,Dr. Dre
+a_the_meters,artist,The Meters
+a_blondie,artist,Blondie
+a_b_b__king,artist,B.B. King
+a_dr__john__the_night_tripper,artist,"Dr. John, the Night Tripper"
+a_n_w_a,artist,N.W.A
+a_steely_dan,artist,Steely Dan
+a_jefferson_airplane,artist,Jefferson Airplane
+a_crosby__stills__nash___young,artist,"Crosby, Stills, Nash & Young"
+a_santana,artist,Santana
+a_arcade_fire,artist,Arcade Fire
+a_the_b_52_s,artist,The B 52's
+a_a_tribe_called_quest,artist,A Tribe Called Quest
+a_howlin__wolf,artist,Howlin' Wolf
+a_pretenders,artist,Pretenders
+a_beastie_boys,artist,Beastie Boys
+a_joy_division,artist,Joy Division
+a_kiss,artist,KISS
+a_t__rex,artist,T. Rex
+a_linda_ronstadt,artist,Linda Ronstadt
+a_elvis_costello___the_attractions,artist,Elvis Costello & The Attractions
+a_metallica,artist,Metallica
+a_rod_stewart,artist,Rod Stewart
+a_todd_rundgren,artist,Todd Rundgren
+a_carpenters,artist,Carpenters
+a_aerosmith,artist,Aerosmith
+a_funkadelic,artist,Funkadelic
+a_curtis_mayfield_and_the_impressions,artist,Curtis Mayfield and The Impressions
+a_abba,artist,ABBA
+a_willie_nelson,artist,Willie Nelson
+a_madonna,artist,Madonna
+a_the_stooges,artist,The Stooges
+a_peter_gabriel,artist,Peter Gabriel
+a_buffalo_springfield,artist,Buffalo Springfield
+a_quicksilver_messenger_service,artist,Quicksilver Messenger Service
+a_the_flying_burrito_brothers,artist,The Flying Burrito Brothers
+a_green_day,artist,Green Day
+a_lou_reed,artist,Lou Reed
+a_john_mayall___the_bluesbreakers,artist,John Mayall & The Bluesbreakers
+a_r_e_m_,artist,R.E.M.
+a_little_walter,artist,Little Walter
+a_the_strokes,artist,The Strokes
+a_nine_inch_nails,artist,Nine Inch Nails
+a_cat_stevens,artist,Cat Stevens
+a_pearl_jam,artist,Pearl Jam
+a_neil_young___crazy_horse,artist,Neil Young & Crazy Horse
+a_ike___tina_turner,artist,Ike & Tina Turner
+a_new_york_dolls,artist,New York Dolls
+a_bo_diddley,artist,Bo Diddley
+a_bobby__blue__bland,artist,"Bobby \""Blue\"" Bland"
+a_the_smiths,artist,The Smiths
+a_my_bloody_valentine,artist,My Bloody Valentine
+a_professor_longhair,artist,Professor Longhair
+a_neil_diamond,artist,Neil Diamond
+a_pixies,artist,Pixies
+a_eric_b____rakim,artist,Eric B. & Rakim
+a_bonnie_raitt,artist,Bonnie Raitt
+a_queen,artist,Queen
+a_the_kinks,artist,The Kinks
+a_patsy_cline,artist,Patsy Cline
+a_jackie_wilson,artist,Jackie Wilson
+a_eminem,artist,Eminem
+a_jerry_lee_lewis,artist,Jerry Lee Lewis
+a_the_mothers_of_invention,artist,The Mothers of Invention
+a_the_grateful_dead,artist,The Grateful Dead
+a_ornette_coleman,artist,Ornette Coleman
+a_jay_z,artist,Jay Z
+a_kraftwerk,artist,Kraftwerk
+a_whitney_houston,artist,Whitney Houston
+a_janet,artist,Janet
+a_grateful_dead,artist,Grateful Dead
+a_crosby__stills___nash,artist,"Crosby, Stills & Nash"
+a_tracy_chapman,artist,Tracy Chapman
+a_blood__sweat___tears,artist,"Blood, Sweat & Tears"
+a_the_jesus_and_mary_chain,artist,The Jesus and Mary Chain
+a_sleater_kinney,artist,Sleater Kinney
+a_smokey_robinson___the_miracles,artist,Smokey Robinson & The Miracles
+a_labelle,artist,LaBelle
+a_parliament,artist,Parliament
+a_janet_jackson,artist,Janet Jackson
+a_various,artist,Various
+a_mary_j__blige,artist,Mary J. Blige
+a_barry_white,artist,Barry White
+a_the_cars,artist,The Cars
+a_x,artist,X
+a_bob_dylan_and_the_band,artist,Bob Dylan and the Band
+a_mc5,artist,MC5
+a_leonard_cohen,artist,Leonard Cohen
+a_weezer,artist,Weezer
+a_dolly_parton,artist,Dolly Parton
+a_jeff_buckley,artist,Jeff Buckley
+a_lucinda_williams,artist,Lucinda Williams
+a_beck,artist,Beck
+a_red_hot_chili_peppers,artist,Red Hot Chili Peppers
+a_jane_s_addiction,artist,Jane's Addiction
+a_lauryn_hill,artist,Lauryn Hill
+a_tom_petty_and_the_heartbreakers,artist,Tom Petty and the Heartbreakers
+a_the_o_jays,artist,The O'Jays
+a_nick_drake,artist,Nick Drake
+a_randy_newman,artist,Randy Newman
+a_the_police,artist,The Police
+a_eric_clapton,artist,Eric Clapton
+a_the_cure,artist,The Cure
+a_liz_phair,artist,Liz Phair
+a_sonic_youth,artist,Sonic Youth
+a_richard___linda_thompson,artist,Richard & Linda Thompson
+a_graham_parker___the_rumour,artist,Graham Parker & The Rumour
+a_soundgarden,artist,Soundgarden
+a_jethro_tull,artist,Jethro Tull
+a_big_brother___the_holding_company,artist,Big Brother & the Holding Company
+a_tom_waits,artist,Tom Waits
+a_black_flag,artist,Black Flag
+a_moby,artist,Moby
+a_depeche_mode,artist,Depeche Mode
+a_meat_loaf,artist,Meat Loaf
+a_de_la_soul,artist,De La Soul
+a_the_yardbirds,artist,The Yardbirds
+a_dire_straits,artist,Dire Straits
+a_buzzcocks,artist,Buzzcocks
+a_outkast,artist,OutKast
+a_the_smashing_pumpkins,artist,The Smashing Pumpkins
+a_new_order,artist,New Order
+a_rage_against_the_machine,artist,Rage Against the Machine
+a_mott_the_hoople,artist,Mott the Hoople
+a_arctic_monkeys,artist,Arctic Monkeys
+a_roxy_music,artist,Roxy Music
+a_jackson_browne,artist,Jackson Browne
+a_bjork,artist,Bjork
+a_john_lee_hooker,artist,John Lee Hooker
+a_oasis,artist,Oasis
+a_tlc,artist,TLC
+a_toots___the_maytals,artist,Toots & The Maytals
+a_the_modern_lovers,artist,The Modern Lovers
+a_wu_tang_clan,artist,Wu Tang Clan
+a_don_henley,artist,Don Henley
+a_the_white_stripes,artist,The White Stripes
+a_m_i_a_,artist,M.I.A.
+a_lcd_soundsystem,artist,LCD Soundsystem
+a_massive_attack,artist,Massive Attack
+a_zz_top,artist,ZZ Top
+a_the_temptations,artist,The Temptations
+a_nas,artist,Nas
+a_lynyrd_skynyrd,artist,Lynyrd Skynyrd
+a_dr__john,artist,Dr. John
+a_big_star,artist,Big Star
+a_pj_harvey,artist,PJ Harvey
+a_sinead_o_connor,artist,Sinead O'Connor
+a_wire,artist,Wire
+a_minutemen,artist,Minutemen
+a_the_go_go_s,artist,The Go Go's
+a_van_halen,artist,Van Halen
+a_paul_mccartney___wings,artist,Paul McCartney & Wings
+a_portishead,artist,Portishead
+a_the_crickets,artist,The Crickets
+a_the_ronettes,artist,The Ronettes
+a_diana_ross___the_supremes,artist,Diana Ross & The Supremes
+a_gram_parsons,artist,Gram Parsons
+a_cheap_trick,artist,Cheap Trick
+a_peter_wolf,artist,Peter Wolf
+a_brian_eno,artist,Brian Eno
+a_vampire_weekend,artist,Vampire Weekend
+a_george_harrison,artist,George Harrison
+a_lil_wayne,artist,Lil Wayne
+a_the_pogues,artist,The Pogues
+a_suicide,artist,Suicide
+a_devo,artist,DEVO
+a_war,artist,War
+a_steve_miller_band,artist,Steve Miller Band
+a_stan_getz_joao_gilbertofeaturingantonio_carlos_jobim,artist,Stan Getz/Joao GilbertofeaturingAntonio Carlos Jobim
+a_amy_winehouse,artist,Amy Winehouse
+a_john_prine,artist,John Prine
+a_epmd,artist,EPMD
+a_alice_cooper,artist,Alice Cooper
+a_los_lobos,artist,Los Lobos
+a_my_morning_jacket,artist,My Morning Jacket
+a_the_drifters,artist,The Drifters
+a_hole,artist,Hole
+a_public_image_ltd_,artist,Public Image Ltd.
+a_echo_and_the_bunnymen,artist,Echo and The Bunnymen
+a_def_leppard,artist,Def Leppard
+a_the_magnetic_fields,artist,The Magnetic Fields
+a_coldplay,artist,Coldplay
+a_the_paul_butterfield_blues_band,artist,The Paul Butterfield Blues Band
+a_fugees,artist,Fugees
+a_l_l__cool_j,artist,L.L. Cool J
+a_george_michael,artist,George Michael
+a_manu_chao,artist,Manu Chao
+a_merle_haggard,artist,Merle Haggard
+a_loretta_lynn,artist,Loretta Lynn
+a_raekwon,artist,Raekwon
+a_d_angelo,artist,D'Angelo
+a_steve_earle,artist,Steve Earle
+a_gang_of_four,artist,Gang of Four
+a_earth__wind___fire,artist,"Earth, Wind & Fire"
+a_cyndi_lauper,artist,Cyndi Lauper
+a_husker_du,artist,Husker Du
+a_albert_king,artist,Albert King
+a_eurythmics,artist,Eurythmics
+a_wilco,artist,Wilco
+a_mgmt,artist,MGMT
+a_boz_scaggs,artist,Boz Scaggs
+a_the_stone_roses,artist,The Stone Roses

@@ -1,0 +1,15 @@
+~id,~label,name
+g_rock,genre,Rock
+g_pop,genre,Pop
+g_funk___soul,genre,Funk / Soul
+g_blues,genre,Blues
+g_jazz,genre,Jazz
+g_folk,genre,Folk
+g_world,genre,World
+g___country,genre,& Country
+g_classical,genre,Classical
+g_stage___screen,genre,Stage & Screen
+g_reggae,genre,Reggae
+g_hip_hop,genre,Hip Hop
+g_electronic,genre,Electronic
+g_latin,genre,Latin
