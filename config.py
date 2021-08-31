@@ -23,6 +23,15 @@ db_host = os.getenv("DB_HOST")
 db_name = os.getenv("DB_NAME")
 db_base = os.getenv("DB_BASE")
 db_pass = os.getenv("DB_PASSWORD")
+######################CSV PARAMS###########################################
+
+csv_basic = "Basic.csv"
+csv_year = "Year.csv"
+csv_edges = "Edges.csv"
+csv_genre = "Genre.csv"
+csv_albums = "Albums.csv"
+csv_artist = "Artist.csv"
+csv_subgenre = "Subgenre.csv"
 ######################NAME DATABASE########################################
 
 table_user = 'user'

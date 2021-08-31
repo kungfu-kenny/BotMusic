@@ -6,7 +6,8 @@ from sqlalchemy import (create_engine,
                         Column,
                         Integer,
                         String,
-                        ForeignKey)
+                        ForeignKey,
+                        PrimaryKeyConstraint)
 from sqlalchemy.orm.session import Session
 from config import (db_file,
                     db_host,
@@ -44,95 +45,107 @@ Base = declarative_base()
 
 
 association_table_song_genre = Table(table_song_genre, Base.metadata,
-    Column('id_song', ForeignKey(f'{table_song}.id'), primary_key=True),
-    Column('id_genre', ForeignKey(f'{table_genre}.id'), primary_key=True)
+    Column('id_song', ForeignKey(f'{table_song}.id')),
+    Column('id_genre', ForeignKey(f'{table_genre}.id')),
+    PrimaryKeyConstraint('id_song', 'id_genre'),    
 )
 
 association_table_song_label = Table(table_song_label, Base.metadata,
-    Column('id_song', ForeignKey(f'{table_song}.id'), primary_key=True),
-    Column('id_label', ForeignKey(f'{table_label}.id'), primary_key=True)
+    Column('id_song', ForeignKey(f'{table_song}.id')),
+    Column('id_label', ForeignKey(f'{table_label}.id')),
+    PrimaryKeyConstraint('id_song', 'id_label')
 )
 
 association_table_album_song = Table(table_album_song, Base.metadata,
-    Column('id_song', ForeignKey(f'{table_song}.id'), primary_key=True),
-    Column('id_album', ForeignKey(f'{table_album}.id'), primary_key=True)
+    Column('id_song', ForeignKey(f'{table_song}.id')),
+    Column('id_album', ForeignKey(f'{table_album}.id')),
+    PrimaryKeyConstraint('id_song', 'id_album')
 )
 
-
 association_table_album_label = Table(table_album_label, Base.metadata,
-    Column('id_album', ForeignKey(f'{table_album}.id'), primary_key=True),
-    Column('id_label', ForeignKey(f'{table_label}.id'), primary_key=True)
+    Column('id_album', ForeignKey(f'{table_album}.id')),
+    Column('id_label', ForeignKey(f'{table_label}.id')),
+    PrimaryKeyConstraint('id_album', 'id_label')
 )
 
 association_table_album_genre = Table(table_album_genre, Base.metadata,
-    Column('id_album', ForeignKey(f'{table_album}.id'), primary_key=True),
-    Column('id_genre', ForeignKey(f'{table_genre}.id'), primary_key=True)
+    Column('id_album', ForeignKey(f'{table_album}.id')),
+    Column('id_genre', ForeignKey(f'{table_genre}.id')),
+    PrimaryKeyConstraint('id_album', 'id_genre')
 )
 
 association_table_artist_song = Table(table_artist_song, Base.metadata,
-    Column('id_song', ForeignKey(f'{table_song}.id'), primary_key=True),
-    Column('id_artist', ForeignKey(f'{table_artist}.id'), primary_key=True)
+    Column('id_song', ForeignKey(f'{table_song}.id')),
+    Column('id_artist', ForeignKey(f'{table_artist}.id')),
+    PrimaryKeyConstraint('id_song', 'id_artist')
 )
 
 association_table_genre_label = Table(table_genre_label, Base.metadata,
-    Column('id_genre', ForeignKey(f'{table_genre}.id'), primary_key=True),
-    Column('id_label', ForeignKey(f'{table_label}.id'), primary_key=True)
+    Column('id_genre', ForeignKey(f'{table_genre}.id')),
+    Column('id_label', ForeignKey(f'{table_label}.id')),
+    PrimaryKeyConstraint('id_genre', 'id_label')
 )
 
 association_table_artist_genre = Table(table_artist_genre, Base.metadata,
-    Column('id_artist', ForeignKey(f'{table_artist}.id'), primary_key=True),
-    Column('id_genre', ForeignKey(f'{table_genre}.id'), primary_key=True)
+    Column('id_artist', ForeignKey(f'{table_artist}.id')),
+    Column('id_genre', ForeignKey(f'{table_genre}.id')),
+    PrimaryKeyConstraint('id_artist', 'id_genre')
 )
 
 association_table_artist_label = Table(table_artist_label, Base.metadata,
-    Column('id_artist', ForeignKey(f'{table_artist}.id'), primary_key=True),
-    Column('id_label', ForeignKey(f'{table_label}.id'), primary_key=True)
+    Column('id_artist', ForeignKey(f'{table_artist}.id')),
+    Column('id_label', ForeignKey(f'{table_label}.id')),
+    PrimaryKeyConstraint('id_artist', 'id_label')
 )
 
 association_table_artist_album = Table(table_artist_album, Base.metadata,
-    Column('id_artist', ForeignKey(f'{table_artist}.id'), primary_key=True),
-    Column('id_album', ForeignKey(f'{table_album}.id'), primary_key=True)
+    Column('id_artist', ForeignKey(f'{table_artist}.id')),
+    Column('id_album', ForeignKey(f'{table_album}.id')),
+    PrimaryKeyConstraint('id_artist', 'id_album')
 )
 
-
 association_table_user_history_song = Table(table_user_history_song, Base.metadata,
-    Column('id_song', ForeignKey(f'{table_song}.id'), primary_key=True),
-    Column('id_user', ForeignKey(f'{table_user}.id'), primary_key=True)
+    Column('id_song', ForeignKey(f'{table_song}.id')),
+    Column('id_user', ForeignKey(f'{table_user}.id')),
+    PrimaryKeyConstraint('id_song', 'id_user')
 )
 
 association_table_user_history_album = Table(table_user_history_album, Base.metadata,
-    Column('id_album', ForeignKey(f'{table_album}.id'), primary_key=True),
-    Column('id_user', ForeignKey(f'{table_user}.id'), primary_key=True)
+    Column('id_album', ForeignKey(f'{table_album}.id')),
+    Column('id_user', ForeignKey(f'{table_user}.id')),
+    PrimaryKeyConstraint('id_album', 'id_user')
 )
 
 association_table_user_favourite_song = Table(table_user_favourite_song, Base.metadata,
-    Column('id_song', ForeignKey(f'{table_song}.id'), primary_key=True),
-    Column('id_user', ForeignKey(f'{table_user}.id'), primary_key=True)
+    Column('id_song', ForeignKey(f'{table_song}.id')),
+    Column('id_user', ForeignKey(f'{table_user}.id')),
+    PrimaryKeyConstraint('id_song', 'id_user')
 )
 
 association_table_user_favourite_album = Table(table_user_favourite_album, Base.metadata,
-    Column('id_album', ForeignKey(f'{table_album}.id'), primary_key=True),
-    Column('id_user', ForeignKey(f'{table_user}.id'), primary_key=True)
+    Column('id_album', ForeignKey(f'{table_album}.id')),
+    Column('id_user', ForeignKey(f'{table_user}.id')),
+    PrimaryKeyConstraint('id_album', 'id_user')
 )
 
 
 class SongYoutube(Base):
     __tablename__ = table_song_youtube
-    id_song = Column(Integer, ForeignKey(f'{table_song}.id'), primary_key=True),
+    id_song = Column(Integer, ForeignKey(f'{table_song}.id'), primary_key=True)
     link = Column(String(200))
     song_youtube = relationship("Song", back_populates="song_youtube")
 
 
 class SongYear(Base):
     __tablename__ = table_song_year
-    id_song = Column(Integer, ForeignKey(f'{table_song}.id'), primary_key=True),
+    id_song = Column(Integer, ForeignKey(f'{table_song}.id'), primary_key=True)
     year = Column(Integer)
     song_year = relationship("Song", back_populates="song_year")
 
 
 class AlbumYear(Base):
     __tablename__ = table_album_year
-    id_album = Column(Integer, ForeignKey(f'{table_album}.id'), primary_key=True),
+    id_album = Column(Integer, ForeignKey(f'{table_album}.id'), primary_key=True)
     year = Column(Integer)
     album_year = relationship("Album", back_populates="album_year")
 
@@ -278,24 +291,44 @@ class SessionCreator:
         self.db_base = db_base
         self.get_folder = lambda x: os.path.exists(x) or os.mkdir(x)
         self.folder_storage = os.path.join(folder_current, folder_storage)
-        self.engine = self.produce_engine()
+        self.engine = self.return_engine()
         print(self.engine)
+        self.session = self.return_session()
+        print(self.session)
+        print('.........................................')
+        print(self.create_db())
+
+    def return_engine(self, get_sub_engine=False) -> object:
+        """
+        Method which is dedicated to return engine in different cases
+        Input:  get_sub_engine = boolean value which changes engine
+        Output: engine for the developing database
+        """
+        if get_sub_engine:
+            return self.produce_engine_file()
+        return self.produce_engine()
 
     def produce_engine(self) -> object:
         """
-        Method which is dedicated to connect to the values of the 
+        Method which is dedicated to create engine from the sql 
         Input:  All values for the PostgeSQL
         Output: object of the session
         """
         try:
-            # return create_engine(f'postgresql://{self.db_base}:{self.db_pass}@{self.db_host}/{self.db_name}')
-            self.get_folder(self.folder_storage)
-            self.sql_file = os.path.join(self.folder_storage, db_file)
-            return create_engine(f"sqlite:///{self.sql_file}")
+            return create_engine(f'postgresql://{self.db_base}:{self.db_pass}@{self.db_host}/{self.db_name}')
         except Exception as e:
-            self.get_folder(self.folder_storage)
-            self.sql_file = os.path.join(self.folder_storage, db_file)
-            return create_engine(f"sqlite:///{self.sql_file}")
+            print(f"We faced problems with values: {e}")
+            return self.produce_engine_file()
+
+    def produce_engine_file(self) -> object:
+        """
+        Method which is dedicated to create engine from the file
+        Input:  None
+        Output: we created engine files
+        """
+        self.get_folder(self.folder_storage)
+        self.sql_file = os.path.join(self.folder_storage, db_file)
+        return create_engine(f"sqlite:///{self.sql_file}")
         
     def return_session(self) -> object:
         """
@@ -304,8 +337,23 @@ class SessionCreator:
         Output: We created session of the values
         """
         try:
-            return Session(bind=self.engine)
+            Session = sessionmaker(bind=self.engine)
+            return Session()
         except Exception as e:
-            print(e)
-            print('=================================================')
+            #TODO add here values of the logging
+            try:
+                self.engine = self.return_engine(True)
+                Session = sessionmaker(bind=self.engine)
+                return Session()
+            except Exception as e:
+                #TODO add here values of the logging
+                pass
             return None
+
+    def create_db(self):
+        try:
+            Base.metadata.create_all(self.engine)
+        except Exception as e:
+            print(f"We faced problems with Base: {e}")
+            self.engine = self.return_engine(True)
+            Base.metadata.create_all(self.engine)
