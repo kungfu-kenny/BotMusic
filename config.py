@@ -32,6 +32,7 @@ csv_genre = "Genre.csv"
 csv_albums = "Albums.csv"
 csv_artist = "Artist.csv"
 csv_subgenre = "Subgenre.csv"
+csv_basic_genre = "Basic_Genre.csv"
 ######################NAME DATABASE########################################
 
 table_user = 'user'

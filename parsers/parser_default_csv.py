@@ -1,5 +1,5 @@
-from genericpath import isfile
 import os
+import numpy as np
 import pandas as pd
 from config import (csv_year,
                     csv_basic,
@@ -8,6 +8,7 @@ from config import (csv_year,
                     csv_albums,
                     csv_artist,
                     csv_subgenre,
+                    csv_basic_genre,
                     folder_current,
                     folder_defaults)
 
@@ -37,11 +38,11 @@ class ParserDefaultCSV:
         Input:  Input values in folder
         Output: boolean values which 
         """
-        value_file = os.path.join(self.folder_defaults, csv_basic)
-        return os.path.join(value_file) and os.path.isfile(value_file)
+        value_check = [os.path.join(self.folder_defaults, x) for x in [csv_basic, csv_basic_genre]]
+        return all([os.path.exists(x) and os.path.isfile(x) for x in value_check])
 
     @staticmethod
-    def get_values_list_df(df_used:pd.DataFrame, df_index:list, column:str='name') -> list:
+    def get_values_list_df(df_used:pd.DataFrame, df_index:list, column:str='name', column_index:str="~id") -> list:
         """
         Method which is dedicated to get values list of the df
         Input:  df_used = dataframe of values where to take values
@@ -50,7 +51,7 @@ class ParserDefaultCSV:
         """
         value_return = []
         for index in df_index:
-            value_return.extend(df_used.loc[df_used["~id"]==index, column].values)
+            value_return.extend(df_used.loc[df_used[column_index]==index, column].values)
         return value_return
 
     @staticmethod
@@ -79,6 +80,40 @@ class ParserDefaultCSV:
                 value_list.append(value_take)
         return value_list
 
+    @staticmethod
+    def produce_basic_genres(df_genre:pd.DataFrame, df_subgenre:pd.DataFrame) -> pd.DataFrame:
+        """
+        Method which is dedicated to create dataframe for genre values
+        Input:  df_genre = genre dataframe
+                df_subgenre = subgenre dataframe 
+        Output: we created values of the groups id
+        """
+        values_groups = df_genre['name'].unique()
+        values_groups = np.append(values_groups, df_subgenre['name'].unique(), 0)
+        values_groups = np.unique(values_groups)
+        values_index = [i+1 for i in range(len(values_groups))]
+        return pd.DataFrame(list(zip(values_index, values_groups)), columns=['~id', 'name'])
+
+    def produce_manual_changes(self, df_calculated:pd.DataFrame, df_genre_id:pd.DataFrame) -> set:
+        """
+        Method which is dedicated to manual change values for more comfortable usage
+        Input:  df_calculated = calculated dataframe for further work
+                df_genre_id = dataframe of the genre and it's id
+        Output: set of the same dataframes values
+        """
+        df_genre_id.replace({'name':{"& Country": "Country"}}, inplace=True)
+        df_genre_id_name = np.sort(df_genre_id['name'].unique())
+        df_genre_id_id = [i for i in range(1, len(df_genre_id_name) + 1)]
+        df_genre_id = pd.DataFrame(list(zip(df_genre_id_id, df_genre_id_name)), columns=['~id', 'name'])
+        df_calculated = df_calculated.replace({'Genre':{"& Country": "Country"}})
+        df_calculated.drop_duplicates(subset=['Genre', 'Album_ID'], keep='first', inplace=True)
+        df_genre_id_name = df_calculated['Genre'].values
+        value_list_id = self.get_values_list_df(df_genre_id, df_calculated['Genre'].values, '~id', 'name')
+        df_calculated.insert(4, 'Genre_ID', value_list_id)
+        df_genre_id.replace({'name':{"Musique Concr?te": "Musique Concrete"}}, inplace=True)
+        df_calculated.replace({'Genre':{"Musique Concr?te": "Musique Concrete"}}, inplace=True)
+        return df_calculated, df_genre_id
+
     def produce_basic_value(self) -> None:
         """
         Method which is dedicated to produce basic value of the dataframe for the 
@@ -91,16 +126,17 @@ class ParserDefaultCSV:
         if self.check_presence_work_previous():
             #TODO add here print or log
             return
-        #TODO add here values of the group id calculation in cases of id
         df_albums = pd.read_csv(os.path.join(self.folder_defaults, csv_albums))
         df_genre = pd.read_csv(os.path.join(self.folder_defaults, csv_genre))
         df_artist = pd.read_csv(os.path.join(self.folder_defaults, csv_artist))
         df_subgenre = pd.read_csv(os.path.join(self.folder_defaults, csv_subgenre))
         df_year = pd.read_csv(os.path.join(self.folder_defaults, csv_year))
         df_edges = pd.read_csv(os.path.join(self.folder_defaults, csv_edges))
+        df_genre_id = self.produce_basic_genres(df_genre, df_subgenre)
+        
         values_id = df_edges['~from'].unique()
         df_artist['Artist_ID'] = [f for f in range(1, df_artist['name'].nunique() + 1)]
-        return_index, return_album, return_artist_id, return_artist, return_genre, return_year = [], [], [], [], [], []
+        return_index, return_album, return_artist_id, return_artist, return_genre_id, return_genre, return_year = [], [], [], [], [], [], []
         for index, value_id in enumerate(values_id):
             df_slice = df_edges.loc[df_edges["~from"]==value_id]
             df_id_year = df_slice.loc[df_slice["~label"]=='hasYear', '~to'].values
@@ -131,15 +167,38 @@ class ParserDefaultCSV:
             return_artist.extend(df_res_artist)
             return_artist_id.extend(df_res_artist_id)
         
-        df_calculated = pd.DataFrame(list(zip(return_index, return_album, return_artist_id, return_artist, return_genre, return_year)), 
-                                    columns=self.columns)
+        df_calculated = pd.DataFrame(list(zip(return_index, return_album, return_artist_id, 
+                        return_artist, return_genre, return_year)), columns=self.columns)
+        
+        df_calculated, df_genre_id = self.produce_manual_changes(df_calculated, df_genre_id)
         df_calculated.to_csv(os.path.join(self.folder_defaults, csv_basic), index=False)
+        df_genre_id.to_csv(os.path.join(self.folder_defaults, csv_basic_genre), index=False)
         
-        
-    def get_values_usage(self) -> list:
+    def get_values_db_insert_all(self) -> list:
         """
         Method which is dedicated to produce list for multiple insertions
         Input:  values of the basic csv which was taken for it
         Output: list of dictionaries for taking values of it
         """
-        pass
+        self.produce_basic_value()
+        list_insertion = []
+        df_basic = pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
+        df_album_id = df_basic['Album_ID'].values
+        df_album_name = df_basic['Album'].values
+        df_artist_id = df_basic['Artist_ID'].values
+        df_artist_username = df_basic['Artist'].values
+        df_genre_id = df_basic['Genre_ID'].values
+        df_genre_name = df_basic['Genre'].values
+        df_year = df_basic['Year'].values
+        for album_id, album, artist_id, artist, genre_id, genre, year in zip(df_album_id, 
+                df_album_name, df_artist_id, df_artist_username, df_genre_id, df_genre_name, df_year):
+            list_insertion.append({
+                "album_id": album_id,
+                "album_name": album,
+                "artist_id": artist_id,
+                "artist_username": artist,
+                "genre_id": genre_id,
+                "genre_name": genre,
+                "year_album": year,                
+            })
+        return list_insertion
