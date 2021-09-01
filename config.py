@@ -32,6 +32,8 @@ csv_genre = "Genre.csv"
 csv_albums = "Albums.csv"
 csv_artist = "Artist.csv"
 csv_subgenre = "Subgenre.csv"
+csv_basic_song = "Basic_Song.csv"
+csv_basic_label = "Basic_Label.csv"
 csv_basic_genre = "Basic_Genre.csv"
 ######################NAME DATABASE########################################
 
@@ -58,3 +60,7 @@ table_user_history_song = 'user_history_song'
 table_user_history_album = 'user_history_album'
 table_user_favourite_song = 'user_favourite_song'
 table_user_favourite_album = 'user_favourite_album'
+#######################PARSE GENIUS########################################
+
+link_genius = "https://genius.com"
+link_genius_albums = "albums"

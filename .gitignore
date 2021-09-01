@@ -3,4 +3,6 @@ venv
 storage
 __pycache__
 Basic.csv
+Basic_Song.csv
 Basic_Genre.csv
+Basic_Label.csv

@@ -111,7 +111,16 @@ class ParserDefaultCSV:
         value_list_id = self.get_values_list_df(df_genre_id, df_calculated['Genre'].values, '~id', 'name')
         df_calculated.insert(4, 'Genre_ID', value_list_id)
         df_genre_id.replace({'name':{"Musique Concr?te": "Musique Concrete"}}, inplace=True)
-        df_calculated.replace({'Genre':{"Musique Concr?te": "Musique Concrete"}}, inplace=True)
+        # TODO finish here values  \"Love and Theft\", 
+        # (pronounced 'leh-'nerd 'skin-'nerd) 
+        # The \"Chirping\" Crickets
+        df_calculated.replace({'Genre':{"Musique Concr?te": "Musique Concrete"},
+                            "Album_Name": {'The Band (\\"The Brown Album\\")':'The Band (The Brown Album)',
+                            'Sign \\"Peace\\" the Times': "Sign O’ the Times",
+                            'Metallica (\\"The Black Album\\")': 'Metallica',
+                            'The Beatles (\\"The White Album\\")': 'The Beatles (The White Album)', 
+                            'Blues Breakers With Eric Clapton (\\"The Beano Album\\")': 'Blues Breakers With Eric Clapton',
+                            "[Led Zeppelin IV]": "Led Zeppelin IV"}}, inplace=True)
         return df_calculated, df_genre_id
 
     def produce_basic_value(self) -> None:
