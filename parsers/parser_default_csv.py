@@ -1,6 +1,9 @@
 import os
+import asyncio
+# import aiohttp
 import numpy as np
 import pandas as pd
+from parsers.parser_genius import ParserGenius
 from config import (csv_year,
                     csv_basic,
                     csv_genre,
@@ -19,9 +22,10 @@ class ParserDefaultCSV:
     and to insert them into the database
     """
     def __init__(self) -> None:
+        self.loop = asyncio.get_event_loop()
         self.columns = ['Album_ID', 'Album_Name', "Artist_ID", 'Artist', 'Genre', 'Year']
         self.folder_defaults = os.path.join(folder_current, folder_defaults)
-        self.produce_basic_value()
+        self.produce_basic_values_genius()
         
     def check_presence_files(self) -> bool:
         """
@@ -111,16 +115,11 @@ class ParserDefaultCSV:
         value_list_id = self.get_values_list_df(df_genre_id, df_calculated['Genre'].values, '~id', 'name')
         df_calculated.insert(4, 'Genre_ID', value_list_id)
         df_genre_id.replace({'name':{"Musique Concr?te": "Musique Concrete"}}, inplace=True)
-        # TODO finish here values  \"Love and Theft\", 
-        # (pronounced 'leh-'nerd 'skin-'nerd) 
-        # The \"Chirping\" Crickets
         df_calculated.replace({'Genre':{"Musique Concr?te": "Musique Concrete"},
-                            "Album_Name": {'The Band (\\"The Brown Album\\")':'The Band (The Brown Album)',
-                            'Sign \\"Peace\\" the Times': "Sign O’ the Times",
-                            'Metallica (\\"The Black Album\\")': 'Metallica',
-                            'The Beatles (\\"The White Album\\")': 'The Beatles (The White Album)', 
-                            'Blues Breakers With Eric Clapton (\\"The Beano Album\\")': 'Blues Breakers With Eric Clapton',
-                            "[Led Zeppelin IV]": "Led Zeppelin IV"}}, inplace=True)
+                            "Album_Name": {'Sign \\"Peace\\" the Times': "Sign O’ the Times",
+                            "(pronounced 'leh-'nerd 'skin-'nerd)": "(Pronounced 'leh-'nerd 'skin-'nerd)",}}, inplace=True)
+        for i in ['[', ']', "\\"]:
+            df_calculated.Album_Name=df_calculated.Album_Name.str.replace(i, '', regex=True)
         return df_calculated, df_genre_id
 
     def produce_basic_value(self) -> None:
@@ -180,9 +179,54 @@ class ParserDefaultCSV:
                         return_artist, return_genre, return_year)), columns=self.columns)
         
         df_calculated, df_genre_id = self.produce_manual_changes(df_calculated, df_genre_id)
-        df_calculated.to_csv(os.path.join(self.folder_defaults, csv_basic), index=False)
-        df_genre_id.to_csv(os.path.join(self.folder_defaults, csv_basic_genre), index=False)
+
+        for df_value, value_name in zip([df_calculated, df_genre_id], [csv_basic, csv_basic_genre]):
+            self.produce_basic_csv_save(df_value, os.path.join(self.folder_defaults, value_name))
         
+    @staticmethod
+    def produce_basic_csv_save(df_value:pd.DataFrame, value_path:str) -> None:
+        """
+        Method which is dedicated to 
+        Input:  df_value = pandas DataFrame which needs to be stored
+                value_path = path to the csv values which was used
+        Output: we saved the dataframes to all of it
+        """
+        df_value.to_csv(value_path, index=False)
+
+    @staticmethod
+    def get_links_html(value_names) -> list:
+        """
+        Method which is dedicated to produce values of the 
+        Input:  value_names = list with names of an albums which we are going to search
+        Output: list with parsed html values which are going to be further produced
+        """
+        pass
+        # parser_genius = ParserGenius()
+        #TODO work here
+        #TODO firstly; to check on the default, and to get after that from them html
+        #TODO secondly; after the check of it, if shw must to get from it data manually
+        #TODO thirdly; 
+
+    def produce_basic_values_genius(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
+        """
+        Method which is dedicated to produce values of the songs to the data insertion and to return values of the
+        Input:  pd_calculated = basic dataframe which was fully commited from the
+        Output: we created new dataframe values for the insertion; for the label and for the 
+        """
+        parser_genius = ParserGenius()
+        df_calculated = pd.read_csv('E:\Projects\BotMusic\defaults\Basic.csv')
+        albums = df_calculated.drop_duplicates(subset=['Album_ID'], keep='first').Album_Name.values[:5]
+        print(albums)
+        # check = self.loop.run_until_complete(parser_genius.parse_genius_manually_album_list(["Sgt. Pepper's Lonely Hearts Club Band", 'Pet Sounds', 'Revolver','Highway 61 Revisited', 'Rubber Soul']))
+        # print(check[-1])
+        #TODO remove from here values
+        
+        #TODO work here
+        # value_albums_link_search = [parser_genius.produce_genius_manually_link(album) for album in albums]
+        # print(value_albums_link_search)
+        # value_albums_link_check = asyncio.run(parser_genius.parse_genius_manually_album_list(albums))
+        # print(value_albums_link_check)
+
     def get_values_db_insert_all(self) -> list:
         """
         Method which is dedicated to produce list for multiple insertions

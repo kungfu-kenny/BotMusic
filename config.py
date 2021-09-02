@@ -62,5 +62,8 @@ table_user_favourite_song = 'user_favourite_song'
 table_user_favourite_album = 'user_favourite_album'
 #######################PARSE GENIUS########################################
 
+genius_semaphore_threads = 10
 link_genius = "https://genius.com"
 link_genius_albums = "albums"
+link_genius_search_begin = "/search?q="
+link_genius_search_end= "%20"
