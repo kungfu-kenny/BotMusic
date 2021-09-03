@@ -136,7 +136,7 @@ class ParserGenius:
         if len(value_html) < 1000:
             return 'Undefined'
         soup = BeautifulSoup(value_html, "html.parser")
-        # value_check = soup.find_all('body', {"class":"ng-scope"})
+        soup = soup.find('div', {'class':"SongPageGriddesktop__OneColumn-sc-1px5b71-0"})
         print(soup)
         print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
 
