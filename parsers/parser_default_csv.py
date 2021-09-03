@@ -215,8 +215,11 @@ class ParserDefaultCSV:
         """
         parser_genius = ParserGenius()
         df_calculated = pd.read_csv('E:\Projects\BotMusic\defaults\Basic.csv')
-        albums = df_calculated.drop_duplicates(subset=['Album_ID'], keep='first').Album_Name.values[:5]
-        print(albums)
+        value_id, value_album, value_artist, value_year = list(zip(
+            *df_calculated.drop_duplicates(subset=['Album_ID'], keep='first')[['Album_ID', 'Album_Name', 'Artist', 'Year']].values[:5]))
+        # loop = asyncio.get_event_loop()
+        check = self.loop.run_until_complete(parser_genius.parse_genius_automatic_album_list(value_album, value_artist))
+        print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
         # check = self.loop.run_until_complete(parser_genius.parse_genius_manually_album_list(["Sgt. Pepper's Lonely Hearts Club Band", 'Pet Sounds', 'Revolver','Highway 61 Revisited', 'Rubber Soul']))
         # print(check[-1])
         #TODO remove from here values
