@@ -1,8 +1,11 @@
 import os
 import re
+import ast
 import aiohttp
 import asyncio
-from pprint import pprint
+import requests
+import pandas as pd
+from pprint import pp, pprint
 from bs4 import BeautifulSoup
 from config import (link_genius,
                     link_genius_albums,
@@ -125,7 +128,23 @@ class ParserGenius:
         
         return value_dict
         
-    async def parse_genius_song_length(self, value_html:str, value_link:str) -> str:
+    @staticmethod
+    def get_values_html(html:str) -> list:
+        """
+        Static method which is dedicated to produce values of the html iframe
+        Input:  html = html which was saved
+        Output: list of values which we would currently use
+        """
+        if len(html) < 1000:
+            return ['Undefined', 'Undefined']
+        soup = BeautifulSoup(html, "html.parser")
+        soup = soup.find_all('iframe')
+        soup_check = ['Undefined', 'Undefined']
+        if soup:
+            soup_check = [f['src'] for f in soup]
+        return soup_check
+
+    async def parse_genius_song_length(self, value_html:list, value_link:str) -> str:
         """
         Method which is dedicated to return length of the song via the page 
         within the Genous and apple music subelement which shows that
@@ -133,12 +152,15 @@ class ParserGenius:
                 value_link = link to the song with the lyrics
         Output: length of the selected track
         """
-        if len(value_html) < 1000:
-            return 'Undefined'
-        soup = BeautifulSoup(value_html, "html.parser")
-        soup = soup.find('div', {'class':"SongPageGriddesktop__OneColumn-sc-1px5b71-0"})
-        print(soup)
-        print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        try:
+            value_links = self.get_values_html(value_html)
+            if value_links != ['Undefined', 'Undefined'] and value_links and len(value_links) > 1:
+                return value_links
+            value_html = self.parse_links_iframe(value_link)
+            return await self.parse_genius_song_length(value_html, value_link)
+        except Exception as e:
+            #TODO add here some exception
+            return ['Undefined', 'Undefined']
 
     @staticmethod
     def produce_genius_manually_link(value_search:str) -> set:
@@ -163,16 +185,63 @@ class ParserGenius:
     async def parse_genius_manually_link(self, session:object, value_name_album:str, value_check=False) -> str:
         """
         Method which is dedicated to produce manuall search of the albums in caes that we are looking by album
-        Input:  value_name_album = album name which is going to be parsed
+        Input:  session = session object for the search
+                value_name_album = album name which is going to be parsed
+                value_check = value 
         Output: we successfully parsed all names which were used on the genius
         """
+        if value_name_album == 'Undefined':
+            return value_name_album
         async with session.get(value_name_album) as r:
             if r.status == 200:
                 return await r.text()
             if not value_check:
                 return await self.produce_genius_above(value_name_album)
-            return await value_name_album
+            return value_name_album
     
+    def parse_links_iframe(self, value_link:str) -> str:
+        """
+        Method which is dedicated to return text of the html for the getting values of the length
+        Input:  value_link = link value of the song 
+        Output: get value of the link with the song
+        """
+        with requests.get(value_link) as r:
+            if r.status_code == 200:
+                return r.content
+        return value_link
+
+    @staticmethod
+    def parse_subvalues_apple_music(value_string:str) -> dict:
+        """
+        Static method which is dedicated to take only necessary values for the song which would be used further
+        Input:  value_string = string value of the 
+        Output: we created dictionary for the further work
+        """
+        value_dict = {}
+        value_list = value_string[2:-1].split(',"')
+        for column_name in ['title', 'artist_display_name', 'artwork_url']:
+            for column_key, column_value in [v.split('":') for v in value_list]:
+                if column_name == column_key:
+                    value_dict[column_key] = column_value[1:-1]
+        return value_dict
+
+    async def parse_apple_music_song_length(self, value_html:str, value_link:str) -> object:
+        """
+        Async Method which is dedicated to parse the apple music link for getting all possible values about the song
+        Input:  value_html = html which was previously parsed from it
+                value_link = link to this html
+        Output: values which were succesfully parsed
+        """
+        value_dict = {}
+        soup = BeautifulSoup(value_html, "html.parser")
+        soup = soup.find("apple-music-player")
+        if soup:
+            value_dict.update(ast.literal_eval(soup['apple_music_tracks'][1:-1]))
+            value_dict.update({'song_id': int(soup['song_id'])})
+            value_dict.pop('country_codes')
+            value_dict.update(self.parse_subvalues_apple_music(soup['unmatched_placeholder_track']))
+        return value_dict
+
     async def make_html_links(self, session:object, value_album_list:list, value_bool:bool=False) -> list:
         """
         Asyncio values of the generating html from the links
@@ -213,13 +282,21 @@ class ParserGenius:
                 value_return = await self.make_html_links(session, links, True)
         tasks = [asyncio.create_task(self.parse_genius_automatic_album_link(value_html, link)) for value_html, link in zip(value_return, links)]
         results = await asyncio.gather(*tasks)
-        #TODO produce parsing of the links of the product
-        for value_album in results[:1]:
-            links = value_album.get('Songs_Links', [])[:1]
-            async with semaphore:
+        async with semaphore:
+            for value_album in results[:1]:
+                links = value_album.get('Songs_Links', [])
                 async with aiohttp.ClientSession(trust_env=True) as session:
                     value_return = await self.make_html_links(session, links, True)
-            tasks = [asyncio.create_task(self.parse_genius_song_length(f, link)) for f, link in zip(value_return, links)]
-            list_lengthes = await asyncio.gather(*tasks)
-            print(list_lengthes)
-            print('#########################################')
+                tasks = [asyncio.create_task(self.parse_genius_song_length(f, link)) for f, link in zip(value_return, links)]
+                list_lengthes = await asyncio.gather(*tasks)
+                
+                list_link_song_youtube = [f[0] for f in list_lengthes]
+                list_link_apple_music = [f[1] for f in list_lengthes]
+                async with aiohttp.ClientSession(trust_env=True) as session:
+                    value_return_length = await self.make_html_links(session, list_link_apple_music, True)
+                tasks = [asyncio.create_task(self.parse_apple_music_song_length(html, link)) for html, link in zip(value_return_length, list_link_apple_music)]
+                list_apple_music_values = await asyncio.gather(*tasks)
+                value_album.update({'Song_Links_Youtube': list_link_song_youtube})
+                value_album.update({'Song_Parameters': list_apple_music_values})
+        return results
+                

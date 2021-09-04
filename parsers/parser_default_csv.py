@@ -1,5 +1,6 @@
 import os
 import asyncio
+from pprint import pprint
 # import aiohttp
 import numpy as np
 import pandas as pd
@@ -194,7 +195,7 @@ class ParserDefaultCSV:
         df_value.to_csv(value_path, index=False)
 
     @staticmethod
-    def get_links_html(value_names) -> list:
+    def get_song_values_automatic(value_names) -> list:
         """
         Method which is dedicated to produce values of the 
         Input:  value_names = list with names of an albums which we are going to search
@@ -207,28 +208,33 @@ class ParserDefaultCSV:
         #TODO secondly; after the check of it, if shw must to get from it data manually
         #TODO thirdly; 
 
+    def produce_song_remake_values(self, value_song_dict:dict) -> list:
+        """
+        
+        """
+        pass
+
+    #TODO check here after values
+    def reproduce_search_songs(self) -> None:
+        """"""
+        pass
+
     def produce_basic_values_genius(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
         """
         Method which is dedicated to produce values of the songs to the data insertion and to return values of the
         Input:  pd_calculated = basic dataframe which was fully commited from the
         Output: we created new dataframe values for the insertion; for the label and for the 
         """
+        self.produce_basic_value()
         parser_genius = ParserGenius()
-        df_calculated = pd.read_csv('E:\Projects\BotMusic\defaults\Basic.csv')
+        df_calculated = pd.read_csv('/home/oshevchenko/FolderProjects/BotMusic/defaults/Basic.csv')
         value_id, value_album, value_artist, value_year = list(zip(
             *df_calculated.drop_duplicates(subset=['Album_ID'], keep='first')[['Album_ID', 'Album_Name', 'Artist', 'Year']].values[:5]))
         # loop = asyncio.get_event_loop()
-        check = self.loop.run_until_complete(parser_genius.parse_genius_automatic_album_list(value_album, value_artist))
+        value_songs = self.loop.run_until_complete(parser_genius.parse_genius_automatic_album_list(value_album, value_artist))
+        pprint(value_songs[0])
         print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-        # check = self.loop.run_until_complete(parser_genius.parse_genius_manually_album_list(["Sgt. Pepper's Lonely Hearts Club Band", 'Pet Sounds', 'Revolver','Highway 61 Revisited', 'Rubber Soul']))
-        # print(check[-1])
-        #TODO remove from here values
         
-        #TODO work here
-        # value_albums_link_search = [parser_genius.produce_genius_manually_link(album) for album in albums]
-        # print(value_albums_link_search)
-        # value_albums_link_check = asyncio.run(parser_genius.parse_genius_manually_album_list(albums))
-        # print(value_albums_link_check)
 
     def get_values_db_insert_all(self) -> list:
         """
