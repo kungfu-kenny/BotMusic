@@ -1,7 +1,7 @@
 import os
 import asyncio
 from pprint import pprint
-# import aiohttp
+import json
 import numpy as np
 import pandas as pd
 from parsers.parser_genius import ParserGenius
@@ -23,7 +23,7 @@ class ParserDefaultCSV:
     and to insert them into the database
     """
     def __init__(self) -> None:
-        self.loop = asyncio.get_event_loop()
+        # self.loop = asyncio.get_event_loop()
         self.columns = ['Album_ID', 'Album_Name', "Artist_ID", 'Artist', 'Genre', 'Year']
         self.folder_defaults = os.path.join(folder_current, folder_defaults)
         self.produce_basic_values_genius()
@@ -235,6 +235,14 @@ class ParserDefaultCSV:
         pprint(value_songs[0])
         print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
         
+    #TODO work here !!!
+    def get_values_json(self, value_dict:dict, value_name:str='check.json') -> None:
+        """
+        Method which is dedicated to develop
+        Input:  value_dict = dictionary values of the 
+        Output: we created test.json values for the inserting        
+        """
+        pass
 
     def get_values_db_insert_all(self) -> list:
         """
