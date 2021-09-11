@@ -12,8 +12,10 @@ from config import (csv_year,
                     csv_albums,
                     csv_artist,
                     csv_subgenre,
+                    csv_basic_song,
                     csv_basic_genre,
                     folder_current,
+                    folder_storage,
                     folder_defaults)
 
 
@@ -23,8 +25,11 @@ class ParserDefaultCSV:
     and to insert them into the database
     """
     def __init__(self) -> None:
-        # self.loop = asyncio.get_event_loop()
+        self.loop = asyncio.get_event_loop()
         self.columns = ['Album_ID', 'Album_Name', "Artist_ID", 'Artist', 'Genre', 'Year']
+        self.columns_songs = ['Album_ID', 'Album_Length', 'Album_Link', 'Album_Name', 'Artist_Name', 'Date', 'Label',
+                        'Song_Links_Youtube', 'Songs_Links', 'Songs_Number', 'Songs_Tracklist','Apple_ID', 
+                        'Artwork_Url', 'Duration', 'Artist_Display_Name', 'Song_Genius_ID', 'Title']
         self.folder_defaults = os.path.join(folder_current, folder_defaults)
         self.produce_basic_values_genius()
         
@@ -208,15 +213,86 @@ class ParserDefaultCSV:
         #TODO secondly; after the check of it, if shw must to get from it data manually
         #TODO thirdly; 
 
-    def produce_song_remake_values(self, value_song_dict:dict) -> list:
+    def produce_merge_dataframe(self, value_df:pd.DataFrame) -> pd.DataFrame:
         """
-        
+        Method which is dedicated to produce values of the dataframe values
+        Input:  value_df = value dataframe which user
+        Output: we merged values of the dataframe
         """
-        pass
+        df_path = os.path.join(self.folder_defaults, csv_basic_song)
+        if not os.path.exists(df_path) and not os.path.isfile(df_path):
+            result = value_df
+        else:
+            value_df_file = pd.read_csv(df_path)
+            result = pd.concat([value_df_file, value_df], keys=self.columns_songs)
+        result.drop_duplicates(subset=['Album_ID', 'Album_Length', 'Album_Link', 'Album_Name', 'Artist_Name', 
+                                        'Date', 'Label','Song_Links_Youtube', 'Songs_Links', 
+                                        'Songs_Number', 'Songs_Tracklist'], keep='last', inplace=True)
+        self.produce_basic_csv_save(result, df_path)
+
+
+    def produce_song_remake_values(self, value_song_dict:dict={}, value_check:bool=False) -> list:
+        """
+        Method which is dedicated to produce values of the 
+        Input:  value_song_dict = dictionary values 
+                value_check = boolean values
+        Output: we created value of the dataframe for the songs and successfully developed values after
+        """
+        value_path = os.path.join(folder_current, folder_storage, 'value_one.json')
+        value_list = []
+        # value_path = os.path.join(folder_current, folder_storage, 'check.json')
+        if not value_song_dict and not value_check and not os.path.exists(value_path) and not os.path.isfile(value_path):
+            return
+        elif not value_song_dict and not value_check:
+            with open(value_path, 'r') as value_file:
+                value_song_dict = json.load(value_file)
+            if value_path == os.path.join(folder_current, folder_storage, 'value_one.json'):
+                value_song_dict = [value_song_dict]
+            else:
+                pass
+        for value_song in value_song_dict:
+            # length = value_song.get('Song_Links_Youtube', '')
+            # length = length if length else value_song.get('Album_Length', '')
+            if 'Album_Length' in value_song.keys():
+                pprint(value_song)
+                print('0000000000000000000000000000000000')
+                value_album_id = [value_song.get('Album_ID', '') for _ in range(value_song['Album_Length'])]
+                value_album_len = [value_song.get('Album_Length', '') for _ in range(value_song['Album_Length'])]
+                value_album_link = [value_song['Album_Link'] for _ in range(value_song['Album_Length'])]
+                value_album_name = [value_song['Album_Name'] for _ in range(value_song['Album_Length'])]
+                value_artist_name = [value_song['Artist_Name'] for _ in range(value_song['Album_Length'])]
+                value_album_date = [value_song['Date'] for _ in range(value_song['Album_Length'])]
+                value_album_label = [value_song.get('Label', '') for _ in range(value_song['Album_Length'])]
+                value_song_link_youtube = value_song['Song_Links_Youtube']
+                value_song_link_genius = value_song['Songs_Links']
+                value_song_number = value_song['Songs_Number']
+                value_song_name = value_song['Songs_Tracklist']
+
+                value_song_apple_id = [f.get('apple_id', '') for f in value_song['Song_Parameters']]
+                value_song_artwork = [f.get('artwork_url', '') for f in value_song['Song_Parameters']]
+                value_song_duration = [f.get('duration', '') for f in value_song['Song_Parameters']]
+                value_song_artist_dislay_name = [f.get('artist_display_name', '') for f in value_song['Song_Parameters']]
+                value_song_id_add = [f.get('song_id', '') for f in value_song['Song_Parameters']]
+                value_song_title = [f.get('title', '') for f in value_song['Song_Parameters']]
+                
+
+                value_df = pd.DataFrame(list(zip(value_album_id, value_album_len, value_album_link, value_album_name,
+                                        value_artist_name, value_album_date, value_album_label, 
+                                        value_song_link_youtube, value_song_link_genius, value_song_number,
+                                        value_song_name, value_song_apple_id, value_song_artwork, 
+                                        value_song_duration, value_song_artist_dislay_name,
+                                        value_song_id_add, value_song_title)), columns=self.columns_songs)
+                self.produce_merge_dataframe(value_df)
+            else:
+                value_list.append(value_song)
 
     #TODO check here after values
     def reproduce_search_songs(self) -> None:
-        """"""
+        """
+        Method which is dedicated to get secondary values of the songs which were not presented after
+        Input:  value_song_list = value songs list of the 
+        Output: None
+        """
         pass
 
     def produce_basic_values_genius(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
@@ -229,20 +305,26 @@ class ParserDefaultCSV:
         parser_genius = ParserGenius()
         df_calculated = pd.read_csv('/home/oshevchenko/FolderProjects/BotMusic/defaults/Basic.csv')
         value_id, value_album, value_artist, value_year = list(zip(
-            *df_calculated.drop_duplicates(subset=['Album_ID'], keep='first')[['Album_ID', 'Album_Name', 'Artist', 'Year']].values[:5]))
-        # loop = asyncio.get_event_loop()
+            *df_calculated.drop_duplicates(subset=['Album_ID'], keep='first')[['Album_ID', 'Album_Name', 'Artist', 'Year']].values[:10]))
         value_songs = self.loop.run_until_complete(parser_genius.parse_genius_automatic_album_list(value_album, value_artist))
-        pprint(value_songs[0])
-        print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-        
-    #TODO work here !!!
+        [f.update({'Album_ID':k}) for f, k in zip(value_songs, value_id)]
+
+        self.get_values_json(value_songs)
+        self.produce_song_remake_values(value_songs, True)
+
     def get_values_json(self, value_dict:dict, value_name:str='check.json') -> None:
         """
         Method which is dedicated to develop
         Input:  value_dict = dictionary values of the 
         Output: we created test.json values for the inserting        
         """
-        pass
+        value_folder = os.path.join(folder_current, folder_storage)
+        os.path.exists(value_folder) or os.mkdir(value_folder)
+        value_path = os.path.join(value_folder, value_name)
+        if os.path.exists(value_path) and os.path.isfile(value_path):
+            return
+        with open(value_path, 'w') as fp:
+            json.dump(value_dict, fp)
 
     def get_values_db_insert_all(self) -> list:
         """

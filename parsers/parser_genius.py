@@ -283,7 +283,7 @@ class ParserGenius:
         tasks = [asyncio.create_task(self.parse_genius_automatic_album_link(value_html, link)) for value_html, link in zip(value_return, links)]
         results = await asyncio.gather(*tasks)
         async with semaphore:
-            for value_album in results[:1]:
+            for value_album in results:
                 links = value_album.get('Songs_Links', [])
                 async with aiohttp.ClientSession(trust_env=True) as session:
                     value_return = await self.make_html_links(session, links, True)
