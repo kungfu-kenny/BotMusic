@@ -2,7 +2,16 @@
 venv
 storage
 __pycache__
+
 Basic.csv
 Basic_Song.csv
 Basic_Genre.csv
 Basic_Label.csv
+Basic_Song_Failed.csv
+
+.~lock.Year.csv#
+.~lock.Basic.csv#
+.~lock.Basic_Song.csv#
+.~lock.Basic_Genre.csv#
+.~lock.Basic_Label.csv#
+.~lock.Basic_Song_Failed.csv#

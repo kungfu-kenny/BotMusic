@@ -4,8 +4,8 @@ import ast
 import aiohttp
 import asyncio
 import requests
-import pandas as pd
-from pprint import pp, pprint
+# import pandas as pd
+from pprint import pprint
 from bs4 import BeautifulSoup
 from config import (link_genius,
                     link_genius_albums,
@@ -35,24 +35,22 @@ class ParserGenius:
     @staticmethod
     def get_values_link_genius(value_inserted:str) -> str:
         """
-        Static method which is dedicated 
+        Static method which is dedicated to make basic genius link for all of this
         Input:  value_inserted = string value which is required to be transformed
         Output: value which would be ready to search
         """
         value_inserted = value_inserted.strip()
-        value_inserted = list(value_inserted)
-        for letter in value_inserted:
-            if letter in ['?', '(', ')', '"', '!', "'", '`', '+', '.', '_', '&']:
-                value_inserted.remove(letter)
-        value_inserted = ''.join(value_inserted)
+        for letter in ['?', '(', ')', '"', '!', '`', '+', '.', '_', '&']:
+            if letter in value_inserted:
+                value_inserted = value_inserted.replace(letter, '')
         value_inserted = '-'.join(value_inserted.split(' ')).lower().capitalize()
-        for letter in [':', '$', '’','/']:
+        for letter in [':', "'", '$', '’','/']:
             if letter in value_inserted:
                 value_inserted = value_inserted.replace(letter, '-')
-        value_inserted = list(value_inserted)
-        for i in range(0, len(value_inserted)):
-            if value_inserted[i] == '-' and i < len(value_inserted)-1 and value_inserted[i+1] =='-':
-                value_inserted.remove(i)
+        for length in range(len(value_inserted), 1, -1):
+            value_replace = ''.join(['-' for _ in range(length)])
+            if value_replace in value_inserted:
+                value_inserted = value_inserted.replace(value_replace, '-')
         for i in [0, -1]:
             if value_inserted[i] == '-':
                 value_inserted.pop(i)
@@ -236,7 +234,7 @@ class ParserGenius:
         soup = BeautifulSoup(value_html, "html.parser")
         soup = soup.find("apple-music-player")
         if soup:
-            value_dict.update(ast.literal_eval(soup['apple_music_tracks'][1:-1]))
+            value_dict.update(ast.literal_eval(soup['apple_music_tracks'])[0])
             value_dict.update({'song_id': int(soup['song_id'])})
             value_dict.pop('country_codes')
             value_dict.update(self.parse_subvalues_apple_music(soup['unmatched_placeholder_track']))
@@ -268,7 +266,31 @@ class ParserGenius:
                 value_return = await self.make_html_links(session, links)
         return value_return
 
-    #TODO work here!
+    async def parse_genius_album_link_additional(self, value_album_links:list) -> list:
+        """
+        Async method which is dedicated to make additional album links
+        Input:  value_album_links = value list of the links
+        Output: we succesfully created values of the 
+        """
+        value_album = {}
+        semaphore = asyncio.Semaphore(genius_semaphore_threads)
+        async with semaphore:
+            async with aiohttp.ClientSession(trust_env=True) as session:
+                value_return = await self.make_html_links(session, value_album_links, True)
+            tasks = [asyncio.create_task(self.parse_genius_song_length(f, link)) for f, link in zip(value_return, value_album_links)]
+            list_lengthes = await asyncio.gather(*tasks)
+                
+            list_link_song_youtube = [f[0] for f in list_lengthes]
+            list_link_apple_music = [f[1] for f in list_lengthes]
+            async with aiohttp.ClientSession(trust_env=True) as session:
+                value_return_length = await self.make_html_links(session, list_link_apple_music, True)
+            tasks = [asyncio.create_task(self.parse_apple_music_song_length(html, link)) for html, link in zip(value_return_length, list_link_apple_music)]
+            list_apple_music_values = await asyncio.gather(*tasks)
+            value_album.update({'Song': value_album_links})
+            value_album.update({'Song_Links_Youtube': list_link_song_youtube})
+            value_album.update({'Song_Parameters': list_apple_music_values})
+        return value_album
+
     async def parse_genius_automatic_album_list(self, value_album_list:list, value_artist_list:list) -> list:
         """
         Async method which is dedicated to make automatic album list for further parsing

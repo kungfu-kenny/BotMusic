@@ -14,6 +14,7 @@ from config import (csv_year,
                     csv_subgenre,
                     csv_basic_song,
                     csv_basic_genre,
+                    csv_basic_song_fail,
                     folder_current,
                     folder_storage,
                     folder_defaults)
@@ -27,8 +28,9 @@ class ParserDefaultCSV:
     def __init__(self) -> None:
         self.loop = asyncio.get_event_loop()
         self.columns = ['Album_ID', 'Album_Name', "Artist_ID", 'Artist', 'Genre', 'Year']
-        self.columns_songs = ['Album_ID', 'Album_Length', 'Album_Link', 'Album_Name', 'Artist_Name', 'Date', 'Label',
-                        'Song_Links_Youtube', 'Songs_Links', 'Songs_Number', 'Songs_Tracklist','Apple_ID', 
+        self.columns_songs = ['Album_ID', 'Album_Name_df', 'Artist_Name_df', 'Year_df', 'Album_Length', 
+                        'Album_Link', 'Album_Name', 'Artist_Name', 'Date', 'Label', 'Song_Links_Youtube', 
+                        'Songs_Links', 'Songs_Number', 'Songs_Tracklist','Apple_ID', 
                         'Artwork_Url', 'Duration', 'Artist_Display_Name', 'Song_Genius_ID', 'Title']
         self.folder_defaults = os.path.join(folder_current, folder_defaults)
         self.produce_basic_values_genius()
@@ -39,7 +41,8 @@ class ParserDefaultCSV:
         Input:  presented dataframes from open sources
         Output: boolean values which signify to continue
         """
-        value_check = [os.path.join(self.folder_defaults, x) for x in [csv_year, csv_genre, csv_edges, csv_albums, csv_artist, csv_subgenre]]
+        value_check = [os.path.join(self.folder_defaults, x) for x in [
+                        csv_year, csv_genre, csv_edges, csv_albums, csv_artist, csv_subgenre]]
         return all([os.path.exists(x) and os.path.isfile(x) for x in value_check])
 
     def check_presence_work_previous(self) -> bool:
@@ -122,7 +125,10 @@ class ParserDefaultCSV:
         df_calculated.insert(4, 'Genre_ID', value_list_id)
         df_genre_id.replace({'name':{"Musique Concr?te": "Musique Concrete"}}, inplace=True)
         df_calculated.replace({'Genre':{"Musique Concr?te": "Musique Concrete"},
-                            "Album_Name": {'Sign \\"Peace\\" the Times': "Sign O’ the Times",
+                            'Artist': {"John Lennon / Plastic Ono Band": "John Lennon"},
+                            "Album_Name": {'Sign \\"Peace\\" the Times': "Sign O’ the Times", 
+                            'Live at the Apollo, 1962':'Live at the Apollo',
+                            'The Great Twenty_Eight':'The Great Twenty Eight',
                             "(pronounced 'leh-'nerd 'skin-'nerd)": "(Pronounced 'leh-'nerd 'skin-'nerd)",}}, inplace=True)
         for i in ['[', ']', "\\"]:
             df_calculated.Album_Name=df_calculated.Album_Name.str.replace(i, '', regex=True)
@@ -150,7 +156,8 @@ class ParserDefaultCSV:
         
         values_id = df_edges['~from'].unique()
         df_artist['Artist_ID'] = [f for f in range(1, df_artist['name'].nunique() + 1)]
-        return_index, return_album, return_artist_id, return_artist, return_genre_id, return_genre, return_year = [], [], [], [], [], [], []
+        return_index, return_album, return_artist_id = [], [], [] 
+        return_artist, return_genre, return_year = [], [], []
         for index, value_id in enumerate(values_id):
             df_slice = df_edges.loc[df_edges["~from"]==value_id]
             df_id_year = df_slice.loc[df_slice["~label"]=='hasYear', '~to'].values
@@ -199,37 +206,53 @@ class ParserDefaultCSV:
         """
         df_value.to_csv(value_path, index=False)
 
-    @staticmethod
-    def get_song_values_automatic(value_names) -> list:
+    def get_song_values_automatic(self, df_songs:pd.DataFrame=pd.DataFrame()) -> list:
         """
         Method which is dedicated to produce values of the 
-        Input:  value_names = list with names of an albums which we are going to search
+        Input:  None
         Output: list with parsed html values which are going to be further produced
         """
-        pass
-        # parser_genius = ParserGenius()
-        #TODO work here
-        #TODO firstly; to check on the default, and to get after that from them html
-        #TODO secondly; after the check of it, if shw must to get from it data manually
-        #TODO thirdly; 
-
-    def produce_merge_dataframe(self, value_df:pd.DataFrame) -> pd.DataFrame:
+        if df_songs.empty:
+            value_path = os.path.join(self.folder_defaults, csv_basic_song)
+            if not os.path.exists(value_path) and os.path.isfile(value_path):
+                #TODO add here print or log
+                print('We haven\'t any values to work')
+                return
+            df_songs = pd.read_csv(value_path)
+        df_check=df_songs.loc[df_songs['Apple_ID'].isnull()]
+        
+        value_use = df_check.Songs_Links.values
+        values_use = self.make_list_sublists(value_use, 2)
+        parser_genius = ParserGenius()
+        loop = asyncio.get_event_loop()
+        for value_use in values_use:
+            value_check = loop.run_until_complete(parser_genius.parse_genius_album_link_additional(value_use))
+        
+    def produce_merge_dataframe(self, value_df:pd.DataFrame, value_bool:bool=False, value_submerge=False) -> pd.DataFrame:
         """
         Method which is dedicated to produce values of the dataframe values
         Input:  value_df = value dataframe which user
         Output: we merged values of the dataframe
         """
-        df_path = os.path.join(self.folder_defaults, csv_basic_song)
+        keep = 'last' if value_submerge else 'first'
+        if not value_bool:
+            csv_taken = csv_basic_song
+            columns = self.columns_songs
+            subset = ['Album_ID', 'Album_Length', 'Album_Link', 'Album_Name', 
+                    'Artist_Name', 'Date', 'Label','Song_Links_Youtube', 
+                    'Songs_Links', 'Songs_Number', 'Songs_Tracklist']
+        else:
+            csv_taken = csv_basic_song_fail
+            columns = ['Album_ID', 'Album_Name_df', 'Artist_Name_df', 'Year_df', 'Album_Link_Previous']
+            subset = columns
+        df_path = os.path.join(self.folder_defaults, csv_taken)
         if not os.path.exists(df_path) and not os.path.isfile(df_path):
             result = value_df
         else:
             value_df_file = pd.read_csv(df_path)
-            result = pd.concat([value_df_file, value_df], keys=self.columns_songs)
-        result.drop_duplicates(subset=['Album_ID', 'Album_Length', 'Album_Link', 'Album_Name', 'Artist_Name', 
-                                        'Date', 'Label','Song_Links_Youtube', 'Songs_Links', 
-                                        'Songs_Number', 'Songs_Tracklist'], keep='last', inplace=True)
+            result = pd.concat([value_df_file, value_df], keys=columns)
+        result.drop_duplicates(subset=subset, keep=keep, inplace=True)
         self.produce_basic_csv_save(result, df_path)
-
 
     def produce_song_remake_values(self, value_song_dict:dict={}, value_check:bool=False) -> list:
         """
@@ -238,25 +261,22 @@ class ParserDefaultCSV:
                 value_check = boolean values
         Output: we created value of the dataframe for the songs and successfully developed values after
         """
-        value_path = os.path.join(folder_current, folder_storage, 'value_one.json')
-        value_list = []
-        # value_path = os.path.join(folder_current, folder_storage, 'check.json')
+        value_path = os.path.join(folder_current, folder_storage, 'check.json')
         if not value_song_dict and not value_check and not os.path.exists(value_path) and not os.path.isfile(value_path):
             return
         elif not value_song_dict and not value_check:
             with open(value_path, 'r') as value_file:
                 value_song_dict = json.load(value_file)
             if value_path == os.path.join(folder_current, folder_storage, 'value_one.json'):
-                value_song_dict = [value_song_dict]
+                value_song_dict = value_song_dict
             else:
                 pass
         for value_song in value_song_dict:
-            # length = value_song.get('Song_Links_Youtube', '')
-            # length = length if length else value_song.get('Album_Length', '')
             if 'Album_Length' in value_song.keys():
-                pprint(value_song)
-                print('0000000000000000000000000000000000')
                 value_album_id = [value_song.get('Album_ID', '') for _ in range(value_song['Album_Length'])]
+                value_album_name_df = [value_song.get('Album_Name_df', '') for _ in range(value_song['Album_Length'])]
+                value_artist_name_df = [value_song.get('Artist_Name_df', '') for _ in range(value_song['Album_Length'])]
+                value_year_df = [value_song.get('Year_df', '') for _ in range(value_song['Album_Length'])]
                 value_album_len = [value_song.get('Album_Length', '') for _ in range(value_song['Album_Length'])]
                 value_album_link = [value_song['Album_Link'] for _ in range(value_song['Album_Length'])]
                 value_album_name = [value_song['Album_Name'] for _ in range(value_song['Album_Length'])]
@@ -275,8 +295,8 @@ class ParserDefaultCSV:
                 value_song_id_add = [f.get('song_id', '') for f in value_song['Song_Parameters']]
                 value_song_title = [f.get('title', '') for f in value_song['Song_Parameters']]
                 
-
-                value_df = pd.DataFrame(list(zip(value_album_id, value_album_len, value_album_link, value_album_name,
+                value_df = pd.DataFrame(list(zip(value_album_id, value_album_name_df, value_artist_name_df, 
+                                        value_year_df, value_album_len, value_album_link, value_album_name,
                                         value_artist_name, value_album_date, value_album_label, 
                                         value_song_link_youtube, value_song_link_genius, value_song_number,
                                         value_song_name, value_song_apple_id, value_song_artwork, 
@@ -284,16 +304,70 @@ class ParserDefaultCSV:
                                         value_song_id_add, value_song_title)), columns=self.columns_songs)
                 self.produce_merge_dataframe(value_df)
             else:
-                value_list.append(value_song)
+                value_album_id = [value_song.get('Album_ID', '')]
+                value_album_name_df = [value_song.get('Album_Name_df', '')]
+                value_artist_name_df = [value_song.get('Artist_Name_df', '')]
+                value_year_df = [value_song.get('Year_df', '')]
+                value_link_prev = [value_song.get('Album_Link', '')]
+                value_df = pd.DataFrame(list(zip(value_album_id, value_album_name_df, 
+                    value_artist_name_df, value_year_df, value_link_prev)),
+                    columns=['Album_ID', 'Album_Name_df', 'Artist_Name_df', 'Year_df', 'Album_Link_Previous'])
+                self.produce_merge_dataframe(value_df, True)                
 
-    #TODO check here after values
     def reproduce_search_songs(self) -> None:
         """
-        Method which is dedicated to get secondary values of the songs which were not presented after
+        Method which is dedicated to get secondary values of the songs which were not got from the 
         Input:  value_song_list = value songs list of the 
-        Output: None
+        Output: get list values of the returnal of the returnal for the subsearch of it
         """
         pass
+        #TODO work here
+        #TODO firstly; to check on the default, and to get after that from them html
+        #TODO secondly; after the check of it, if shw must to get from it data manually
+        #TODO thirdly; 
+
+    @staticmethod
+    def make_list_sublists(value_list:list, default_val:int=10) -> list:
+        """
+        Static method which is dedicated to produce values of the sublists of dafault_val size
+        Input:  value_list = list of the values
+                default_val = size of the lists
+        Output: list of the sublists
+        """
+        def chunk(value_list:list, value_len:int):
+            """
+            Function for chunking values of the
+            Input:  value_list = original list
+                    value_len = length of the sublists
+            Output: len on which to chunk values
+            """
+            for i in range(0, len(value_list), value_len):
+                yield value_list[i:i + value_len]
+        return list(chunk(value_list, default_val))
+
+    def get_values_songs_usage(self) -> list:
+        """
+        Method which is dedicated to get automated sorting of the songs
+        Input:  None
+        Output: value list of the lists to get values
+        """
+        df_calculated = pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
+        values_id, values_album, values_artist, values_year = list(zip(
+            *df_calculated.drop_duplicates(subset=['Album_ID'], 
+            keep='first')[['Album_ID', 'Album_Name', 'Artist', 'Year']].values[:40]))
+        file_songs = os.path.join(self.folder_defaults, csv_basic_song)
+        value_bool = os.path.exists(file_songs) and os.path.isfile(file_songs)
+        if value_bool:
+            df_songs = pd.read_csv(file_songs)
+            values_id_created = df_songs.drop_duplicates(subset=['Album_ID'], keep='first').Album_ID.values
+            value_id_used = [i for i, value in enumerate(values_id) if value in values_id_created]
+            values_id = [value for i, value in enumerate(values_id) if i not in value_id_used]
+            values_album = [value for i, value in enumerate(values_album) if i not in value_id_used]
+            values_artist = [value for i, value in enumerate(values_artist) if i not in value_id_used]
+            values_year = [value for i, value in enumerate(values_year) if i not in value_id_used]
+        values_id, values_album = self.make_list_sublists(values_id), self.make_list_sublists(values_album)
+        values_artist, values_year =  self.make_list_sublists(values_artist), self.make_list_sublists(values_year)
+        return values_id, values_album, values_artist, values_year
 
     def produce_basic_values_genius(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
         """
@@ -303,19 +377,26 @@ class ParserDefaultCSV:
         """
         self.produce_basic_value()
         parser_genius = ParserGenius()
-        df_calculated = pd.read_csv('/home/oshevchenko/FolderProjects/BotMusic/defaults/Basic.csv')
-        value_id, value_album, value_artist, value_year = list(zip(
-            *df_calculated.drop_duplicates(subset=['Album_ID'], keep='first')[['Album_ID', 'Album_Name', 'Artist', 'Year']].values[:10]))
-        value_songs = self.loop.run_until_complete(parser_genius.parse_genius_automatic_album_list(value_album, value_artist))
-        [f.update({'Album_ID':k}) for f, k in zip(value_songs, value_id)]
-
-        self.get_values_json(value_songs)
-        self.produce_song_remake_values(value_songs, True)
+        if df_calculated.empty:
+            df_calculated = pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
+        values_id, values_album, values_artist, values_year = self.get_values_songs_usage()
+        
+        for value_id, value_album, value_artist, value_year in zip(values_id, values_album, values_artist, values_year):
+            loop = asyncio.get_event_loop()
+            value_songs = loop.run_until_complete(parser_genius.parse_genius_automatic_album_list(value_album, value_artist))
+            [f.update({'Album_ID':i, 'Album_Name_df':n, 'Artist_Name_df':a, 'Year_df':y}) 
+                for f, i, n, a, y in zip(value_songs, value_id, value_album, value_artist, value_year)]
+            value_msg = '\n'.join([f"+ {i}" for i in value_album])
+            print(f'We parsed albums:\n{value_msg}')
+            print('=============================================================================')
+            self.get_values_json(value_songs)
+            self.produce_song_remake_values(value_songs, True)
+        self.get_song_values_automatic()
 
     def get_values_json(self, value_dict:dict, value_name:str='check.json') -> None:
         """
-        Method which is dedicated to develop
-        Input:  value_dict = dictionary values of the 
+        Method which is dedicated to develop json values for the testing
+        Input:  value_dict = dictionary values of the taken of the it
         Output: we created test.json values for the inserting        
         """
         value_folder = os.path.join(folder_current, folder_storage)
