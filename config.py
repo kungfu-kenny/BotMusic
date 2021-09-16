@@ -68,3 +68,9 @@ link_genius = "https://genius.com"
 link_genius_albums = "albums"
 link_genius_search_begin = "/search?q="
 link_genius_search_end= "%20"
+#######################PARSE APPLE MUSIC###################################
+apple_music_semaphore_threads = 10
+link_apple_music = 'https://music.apple.com'
+link_apple_music_us = 'us'
+link_apple_music_space = '%20'
+link_apple_music_search = 'search?term='
