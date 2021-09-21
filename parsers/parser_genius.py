@@ -337,7 +337,6 @@ class ParserGenius:
 
                 tasks = [asyncio.create_task(self.parse_genius_manually_album_link(value_html, link, value_repeat)) for value_html, link in zip(value_return, links)]
                 value_album.update({"Songs_Values": await asyncio.gather(*tasks)})
-        #TODO think is that necessary for it
         return results
 
     async def parse_genius_automatic_album_list(self, value_album_list:list, value_artist_list:list) -> list:

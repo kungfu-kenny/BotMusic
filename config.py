@@ -36,6 +36,8 @@ csv_basic_song = "Basic_Song.csv"
 csv_basic_label = "Basic_Label.csv"
 csv_basic_genre = "Basic_Genre.csv"
 csv_basic_song_fail = "Basic_Song_Failed.csv"
+csv_basic_song_apple = "Basic_Song_Apple.csv"
+csv_basic_song_genius = "Basic_Song_Genius.csv"
 ######################NAME DATABASE########################################
 
 table_user = 'user'

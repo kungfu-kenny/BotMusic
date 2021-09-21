@@ -7,7 +7,9 @@ Basic.csv
 Basic_Song.csv
 Basic_Genre.csv
 Basic_Label.csv
+Basic_Song_Apple.csv
 Basic_Song_Failed.csv
+Basic_Song_Genius.csv
 
 .~lock.Year.csv#
 .~lock.Basic.csv#
