@@ -79,13 +79,35 @@ class ParserGenius:
             list_links.append(asyncio.create_task(self.get_link_album(album, artist)))
         return await asyncio.gather(*list_links)
 
-    def parse_genius_manually_album_link(self, value_link_album:str) -> dict:
+    async def parse_genius_manually_album_link(self, value_html:str, value_link:str, value_bool:bool) -> dict:
         """
-        Method which is dedicated to produce values of the links
-        Input:  value_link_album = value foe the link of this album
+        Method which is dedicated to produce info from the genius values
+        Input:  value_html = html parsed values from the link
+                value_link = value for the link of this album
+                value_bool = value which signify to make the repeating values for it
         Output: we successfully created dictionary with the links of the 
         """
-        pass
+        value_dict = {"Song_Link": value_link}
+        if len(value_html) < 1000:
+            return value_dict
+        soup = BeautifulSoup(value_html, "html.parser")
+        soup_label = [f.text for f in soup.find_all("span", {"class":"metadata_unit-label"})]
+        soup_lyrics = soup.find('div', {"class": "lyrics"})
+        if soup_lyrics:
+            value_dict['Lyrics'] = soup_lyrics.text
+        for subcolumn in ['Written By', 'Engineer', 'Produced by', 'Recorded At', 'Release Date']:
+            if subcolumn in soup_label:
+                label_index = soup_label.index(subcolumn)
+                soup_label_value = [f.text.strip() for f in soup.find_all("span", {"class":"metadata_unit-info"})][label_index]
+                value_dict[subcolumn] = soup_label_value
+        if value_bool and len(list(value_dict.keys())) == 1:
+            try:
+                return await self.parse_genius_manually_album_link(self.parse_links_iframe(value_link), value_link, value_bool) 
+            except Exception as e:
+                print(e)
+                print('######################################################')
+                return value_dict
+        return value_dict
 
     async def parse_genius_automatic_album_link(self, value_html:str, value_link:str) -> dict:
         """
@@ -111,11 +133,11 @@ class ParserGenius:
         soup_songs = soup_songs_check[:song_len]
         soup_songs = [f.text.strip().split('\n              Lyrics')[0] for f in soup_songs]
         soup_label = [f.text for f in soup.find_all("span", {"class":"metadata_unit-label"})]
-        if 'Label' in soup_label:
-            label_index = soup_label.index('Label')
-            soup_label_value = [f.text.strip() for f in soup.find_all("span", {"class":"metadata_unit-info"})][label_index]
-            value_dict['Label'] = soup_label_value
-        
+        for subcolumn in ['Label', 'Producer']:
+            if subcolumn in soup_label:
+                label_index = soup_label.index(subcolumn)
+                soup_label_value = [f.text.strip() for f in soup.find_all("span", {"class":"metadata_unit-info"})][label_index]
+                value_dict[subcolumn] = soup_label_value
         value_dict['Album_Name'] = soup_name_album
         value_dict['Artist_Name'] = soup_name_artist
         value_dict['Date'] = soup_release
@@ -290,6 +312,33 @@ class ParserGenius:
             value_album.update({'Song_Links_Youtube': list_link_song_youtube})
             value_album.update({'Song_Parameters': list_apple_music_values})
         return value_album
+
+    async def parse_genius_song_additional_info(self, value_album_list:list, value_artist_list:list, value_repeat:bool=False) -> list:
+        """
+        Async method which is dedicated to work with a song's lyrics and return them later
+        Input:  value_album_list = list with the values of the album
+                value_artist_list = the same but with the artists name
+                value_repeat = boolean value for the repeating values of it
+        Output: list of the new values but only with a values 
+        """
+        links = await self.produce_links_parse_albums(value_artist_list, value_album_list)
+        semaphore = asyncio.Semaphore(genius_semaphore_threads)
+        async with semaphore:
+            async with aiohttp.ClientSession(trust_env=True) as session:
+                value_return = await self.make_html_links(session, links, True)
+        tasks = [asyncio.create_task(self.parse_genius_automatic_album_link(value_html, link)) for value_html, link in zip(value_return, links)]
+        results = await asyncio.gather(*tasks)
+        
+        async with semaphore:
+            for value_album in results:
+                links = value_album.get('Songs_Links', [])
+                async with aiohttp.ClientSession(trust_env=True) as session:
+                    value_return = await self.make_html_links(session, links, True)
+
+                tasks = [asyncio.create_task(self.parse_genius_manually_album_link(value_html, link, value_repeat)) for value_html, link in zip(value_return, links)]
+                value_album.update({"Songs_Values": await asyncio.gather(*tasks)})
+        #TODO think is that necessary for it
+        return results
 
     async def parse_genius_automatic_album_list(self, value_album_list:list, value_artist_list:list) -> list:
         """

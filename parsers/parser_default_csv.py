@@ -1,4 +1,5 @@
 import os
+import time
 import asyncio
 from pprint import pprint
 import json
@@ -381,17 +382,23 @@ class ParserDefaultCSV:
             df_calculated = pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
         values_id, values_album, values_artist, values_year = self.get_values_songs_usage()
         
-        for value_id, value_album, value_artist, value_year in zip(values_id, values_album, values_artist, values_year):
+        #TODO fully change here to the another values
+        for value_id, value_album, value_artist, value_year in zip(values_id[:1], values_album[:1], values_artist[:1], values_year[:1]):
+            start = time.time()
             loop = asyncio.get_event_loop()
-            value_songs = loop.run_until_complete(parser_genius.parse_genius_automatic_album_list(value_album, value_artist))
+            value_songs = loop.run_until_complete(parser_genius.parse_genius_song_additional_info(value_album, value_artist, True))
             [f.update({'Album_ID':i, 'Album_Name_df':n, 'Artist_Name_df':a, 'Year_df':y}) 
                 for f, i, n, a, y in zip(value_songs, value_id, value_album, value_artist, value_year)]
+            self.get_values_json(value_songs[0], 'one.json')
+            self.get_values_json(value_songs)
             value_msg = '\n'.join([f"+ {i}" for i in value_album])
             print(f'We parsed albums:\n{value_msg}')
             print('=============================================================================')
-            self.get_values_json(value_songs)
-            self.produce_song_remake_values(value_songs, True)
-        self.get_song_values_automatic()
+            print(f'It took time: {time.time() - start}')
+            print('##########################################')
+        
+        #     self.produce_song_remake_values(value_songs, True)
+        # self.get_song_values_automatic()
 
     def get_values_json(self, value_dict:dict, value_name:str='check.json') -> None:
         """
@@ -405,7 +412,7 @@ class ParserDefaultCSV:
         if os.path.exists(value_path) and os.path.isfile(value_path):
             return
         with open(value_path, 'w') as fp:
-            json.dump(value_dict, fp)
+            json.dump(value_dict, fp, indent=4)
 
     def get_values_db_insert_all(self) -> list:
         """
