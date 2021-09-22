@@ -1,5 +1,4 @@
 import os
-from parsers.parser_apple_music import ParserAppleMusic
 import time
 import asyncio
 from pprint import pprint
@@ -7,6 +6,8 @@ import json
 import numpy as np
 import pandas as pd
 from parsers.parser_genius import ParserGenius
+from parsers.parser_deezer import ParserDeezer
+from parsers.parser_apple_music import ParserAppleMusic
 from config import (csv_year,
                     csv_basic,
                     csv_genre,
@@ -18,6 +19,7 @@ from config import (csv_year,
                     csv_basic_genre,
                     csv_basic_song_fail,
                     csv_basic_song_apple,
+                    csv_basic_song_deezer,
                     csv_basic_song_genius,
                     folder_current,
                     folder_storage,
@@ -42,7 +44,7 @@ class ParserDefaultCSV:
                                 'Album_Producer', 'Song_Place_Recorded', 'Song_Release_Genius']
         self.folder_defaults = os.path.join(folder_current, folder_defaults)
         # self.produce_basic_values_genius()
-        self.produce_basic_values_apple()
+        self.produce_basic_values_deezer()
         
     def check_presence_files(self) -> bool:
         """
@@ -450,22 +452,24 @@ class ParserDefaultCSV:
             print('#############################################################################')
             self.produce_song_remake_values_genius({})
 
-    def produce_basic_values_apple(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
+    def produce_basic_values_deezer(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
         """
         Method which is dedicated to produce values of the songs to the data insertion
         Input:  df_calculated = dataframe which was previously calculated to it
         Output: we created new dataframe which is fully compatible with the previous dataframes and returns to us values
         """
         self.produce_basic_value()
-        parser_apple = ParserAppleMusic()
+        # parser_apple = ParserAppleMusic()
+        parser_deezer = ParserDeezer()
         if df_calculated.empty:
             df_calculated = pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
-        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(csv_basic_song_apple)
+        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(csv_basic_song_deezer)
         for value_id, value_album, value_artist, value_year in zip(values_id[:1], values_album[:1], values_artist[:1], values_year[:1]):
             start = time.time()
             #TODO add here values
             loop = asyncio.get_event_loop()
-            value_songs = loop.run_until_complete(parser_apple.get_produce_apple_music_search(value_album, value_artist, value_year))
+            value_songs = loop.run_until_complete(parser_deezer.produce_search_albums_deezer(value_album, value_artist, value_year))
+            self.get_values_json(value_songs, 'checkings.json')
             value_msg = '\n'.join([f"+ {i}" for i in value_album])
             # print(f'We found albums:\n{value_msg}')
             # print('=============================================================================')

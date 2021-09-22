@@ -37,7 +37,9 @@ csv_basic_label = "Basic_Label.csv"
 csv_basic_genre = "Basic_Genre.csv"
 csv_basic_song_fail = "Basic_Song_Failed.csv"
 csv_basic_song_apple = "Basic_Song_Apple.csv"
+csv_basic_song_deezer = "Basic_Song_Deezer.csv"
 csv_basic_song_genius = "Basic_Song_Genius.csv"
+csv_basic_song_deezer_select = "Basic_Song_Deezer_Selection.csv"
 ######################NAME DATABASE########################################
 
 table_user = 'user'
@@ -71,8 +73,18 @@ link_genius_albums = "albums"
 link_genius_search_begin = "/search?q="
 link_genius_search_end= "%20"
 #######################PARSE APPLE MUSIC###################################
+
 apple_music_semaphore_threads = 10
 link_apple_music = 'https://music.apple.com'
 link_apple_music_us = 'us'
 link_apple_music_space = '%20'
 link_apple_music_search = 'search?term='
+#######################PARSE DEEZER########################################
+
+deezer_semaphore_threads = 10
+link_deezer = 'https://www.deezer.com'
+link_deezer_us = 'us'
+link_deezer_album = 'album'
+link_deezer_search = 'search'
+link_deezer_space = '%20'
+link_deezer_dollar = '%24'

@@ -1,8 +1,10 @@
 import os
+import ast
 import aiohttp
 import asyncio
 from pprint import pprint
 from bs4 import BeautifulSoup
+import requests
 from config import (link_apple_music,
                     link_apple_music_us,
                     link_apple_music_space,
@@ -60,7 +62,7 @@ class ParserAppleMusic:
         return 'che'
 
 
-    async def parse_apple_manually_link(self, session:object, value_name_album:str, value_check=False) -> str:
+    async def parse_apple_manually_link(self, session:object, value_name_album:str) -> str:
         """
         Method which is dedicated to produce manuall search of the albums in caes that we are looking by album
         Input:  session = session object for the search
@@ -95,15 +97,26 @@ class ParserAppleMusic:
         Output: dictionary with fully parsed values for the further search
         """
         links = [self.get_link_values_album_search(album, artist) for album, artist in zip(value_albums, value_artists)]
-        print(links)
-        print('mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm')
         semaphore = asyncio.Semaphore(apple_music_semaphore_threads)
         async with semaphore:
             async with aiohttp.ClientSession(trust_env=True) as session:
                 value_return = await self.make_html_links(session, links)
         tasks = [asyncio.create_task(self.get_html_value_analysis_album(value_html, link)) for value_html, link in zip(value_return[:1], links[:1])]
         results = await asyncio.gather(*tasks)
-            
+        
+        #TODO think about next scripts !
+        # k = requests.get("https://www.deezer.com/search/beatles%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band/album").text
+        # soup = BeautifulSoup(k, "html.parser")
+        # print(soup)
+        # check = soup.find(id="dzr-app")
+        # check = soup.find("div", {"class":"hidden"})#id="naboo_content")# soup.find_all('link')#liYKde g 
+        # import json
+        # from parser_default_csv import ParserDefaultCSV
+        # ParserDefaultCSV().get_values_json(script, 'two.json')
+        # script = json.loads(check.find("script").text.split('window.__DZR_APP_STATE__ = ')[-1])
+        # print(script)
+        # return script
+
         #TODO get values of the links asyncronously
         #TODO get the html values
         #TODO write the values of getting values
