@@ -1,10 +1,7 @@
-import os
-import ast
 import re
 import json
 import aiohttp
 import asyncio
-import requests
 from pprint import pprint
 from bs4 import BeautifulSoup
 from config import (link_deezer, 
@@ -93,11 +90,12 @@ class ParserDeezer:
         Input:  value_string = string value to search
         Output: list of possible values
         """
-        value_return = [value_string]
-        if " (Remastered)" in value_string and value_string[-13:] == " (Remastered)":
-            value_return.append(value_string[:-13])
-        elif " (Remastered)" not in value_string or  (" (Remastered)" in value_string and value_string[-13:] != " (Remastered)"):
-            value_return.append(value_string + " (Remastered)")
+        value_return = [value_string.lower()]
+        for phrase in [' (Original Mono & Stereo Mix Versions)', " (Remastered)"]:
+            if phrase in value_string and value_string[-len(phrase):] == phrase:
+                value_return.append(value_string[:-len(phrase)].lower())
+            elif phrase not in value_string or  (phrase in value_string and value_string[-len(phrase):] != phrase):
+                value_return.append(''.join([value_string, phrase]).lower())
         return value_return
 
     async def produce_basic_json_results_album(self, html:str, link:str, album:str, artist:str, year:str) -> list:
@@ -107,8 +105,6 @@ class ParserDeezer:
                 link = link which provided those results
                 album = album which is searched
                 artist = artists which is searched
-                sub_artist = 
-                sub_album = 
         Output: We created dictionary from the selected values 
         """
         value_list = []
@@ -127,7 +123,7 @@ class ParserDeezer:
             [i.update({"Link Album": '/'.join([link_deezer, link_deezer_us, 
                     link_deezer_album, i.get("ALB_ID", '')])}) for i in value_list]
             
-            [i.update({'Checked Album': i.get('Album Searched', '') in self.get_additional_albums(i['ALB_TITLE'])}) for i in value_list]
+            [i.update({'Checked Album': i.get('Album Searched', '').lower() in self.get_additional_albums(i['ALB_TITLE'])}) for i in value_list]
             [i.update({'Checked Artist': i.get('Artist Searched', '') == i.get('ART_NAME', '')}) for i in value_list]
             
             #TODO think here about the removal

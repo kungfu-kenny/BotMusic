@@ -1,10 +1,7 @@
-import os
-import re
 import ast
 import aiohttp
 import asyncio
 import requests
-# import pandas as pd
 from pprint import pprint
 from bs4 import BeautifulSoup
 from config import (link_genius,

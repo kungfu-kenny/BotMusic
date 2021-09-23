@@ -8,6 +8,7 @@ import pandas as pd
 from parsers.parser_genius import ParserGenius
 from parsers.parser_deezer import ParserDeezer
 from parsers.parser_apple_music import ParserAppleMusic
+from parsers.parser_google_searches import ParserGoogleSearch
 from config import (csv_year,
                     csv_basic,
                     csv_genre,
@@ -44,7 +45,8 @@ class ParserDefaultCSV:
                                 'Album_Producer', 'Song_Place_Recorded', 'Song_Release_Genius']
         self.folder_defaults = os.path.join(folder_current, folder_defaults)
         # self.produce_basic_values_genius()
-        self.produce_basic_values_deezer()
+        # self.produce_basic_values_deezer()
+        self.produce_basic_google_search()
         
     def check_presence_files(self) -> bool:
         """
@@ -262,6 +264,16 @@ class ParserDefaultCSV:
         result.drop_duplicates(subset=subset, keep=keep, inplace=True)
         self.produce_basic_csv_save(result, df_path)
 
+    def produce_song_remake_values_weezer(self, value_list:list=[], value_check:bool=False, value_type:str='') -> list:
+        """
+        Method which is dedicated to produce dataframe of the return and to stroe it in the dataframe if it is necessary
+        Input:  value_list = value list which would have been successfully created
+                value_check = boolean value to signify that we have already provided 
+                value_type = value which shows which type is going to be searched
+        Output: list of the values which woulb be comfortable for use in the future
+        """
+        pass
+
     def produce_song_remake_values_genius(self, value_song_dict={}, value_check:bool=False) -> list:
         """
         Method which is dedicated to produce values of dictionary to one from the 
@@ -452,6 +464,45 @@ class ParserDefaultCSV:
             print('#############################################################################')
             self.produce_song_remake_values_genius({})
 
+    @staticmethod
+    def get_combine_values_deezer(id:list, names:list, artists:list, years:list, songs:list, found:list, possible:list, failed:list) -> set:
+        """
+        Static method which is dedicated to get transform from the getting values
+        Input:  id = id of the albums
+                name = name values of it
+                artist = artis list of the values
+                year = list of the year values
+                songs = parsed list from the songs
+                found = found values fron the search
+                possible = values of the possible candidates
+                failed = failed search of the values
+        Output: we successfully preparsed values for further analogy
+        """
+        def transform_value_failed(value_failed:list) -> list:
+            """
+            Function which is dedicated to return values of the failed values
+            Input:  value_failed = failed search value
+            Output: list of dictionaries values
+            """
+            return [{"Link_Failed_Deezer": link, "Album_Name_Deezer": name, 
+                    "Album_Artist_Deezer": artist} for link, name, artist in value_failed]
+        
+        failed = transform_value_failed(failed)
+        value_search = [[i.get('Artist Searched', ''), i.get('Album Searched', ''), 
+                        i.get('Year Searched', '')] for i in found if i]
+        index_next = 0
+        for index, artist, album, year in zip(id, artists, names, years):
+            search = [artist, album, year]
+            if search in value_search:
+                value_index = value_search.index(search)
+                songs[value_index].update({"Album_ID": index})
+                found[value_index].update({"Album_ID": index})
+                [i.update({"Album_ID": index}) for i in possible[value_index]]
+            else:
+                failed[index_next].update({"Album_ID": index, "Album_Year_Deezer": year})
+                index_next = index_next + 1
+        return songs, found, possible, failed               
+
     def produce_basic_values_deezer(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
         """
         Method which is dedicated to produce values of the songs to the data insertion
@@ -459,22 +510,48 @@ class ParserDefaultCSV:
         Output: we created new dataframe which is fully compatible with the previous dataframes and returns to us values
         """
         self.produce_basic_value()
-        # parser_apple = ParserAppleMusic()
         parser_deezer = ParserDeezer()
         if df_calculated.empty:
             df_calculated = pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
         values_id, values_album, values_artist, values_year = self.get_values_songs_usage(csv_basic_song_deezer)
         for value_id, value_album, value_artist, value_year in zip(values_id[:1], values_album[:1], values_artist[:1], values_year[:1]):
             start = time.time()
-            #TODO add here values
             loop = asyncio.get_event_loop()
-            value_songs = loop.run_until_complete(parser_deezer.produce_search_albums_deezer(value_album, value_artist, value_year))
-            self.get_values_json(value_songs, 'checkings.json')
-            value_msg = '\n'.join([f"+ {i}" for i in value_album])
-            # print(f'We found albums:\n{value_msg}')
-            # print('=============================================================================')
+            value_songs, value_found, value_possible, value_failed = \
+                    loop.run_until_complete(parser_deezer.produce_search_albums_deezer(value_album, value_artist, value_year))
+            value_got = self.get_combine_values_deezer(value_id, value_album, value_artist, value_year, 
+                                                value_songs, value_found, value_possible, value_failed)
+            value_songs, value_found, value_possible, value_failed = value_got
+
+            value_msg = [i.get('Album Searched', '') for i in value_found]
+            value_msg = '\n'.join([f"+ {f}" for f in value_msg if f])
+            print(f'We found albums:\n{value_msg}')
+            print('-----------------------------------------------------------------------------')
+            value_msg = [f"+ {i[0].get('Album Searched', '')}" if i else '' for i in value_possible]
+            value_msg = '\n'.join([f for f in value_msg if f])
+            print(f'We possible albums:\n{value_msg}')
+            print('-----------------------------------------------------------------------------')
+            value_msg = '\n'.join([f"+ {i.get('Album_Name_Deezer', '')}" for i in value_failed])
+            print(f'We failed to find such albums:\n{value_msg}')
+            print('=============================================================================')
+            
+            #TODO add here these values of savings
+            self.produce_song_remake_values_weezer()
             print(f'It took time: {time.time() - start}')
             print('#############################################################################')
+
+    def produce_basic_google_search(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
+        """
+        Method which is dedicated to work with the google search values
+        Input:  df_calculated = previously calculated dataframe from the got values
+        Output: we successfully parsed values from the 
+        """
+        self.produce_basic_value()
+        parser_google_search = ParserGoogleSearch()
+        if df_calculated.empty:
+            df_calculated = pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
+        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(csv_basic_song_deezer)
+        parser_google_search.produce_manually_search_albums_google()
 
     def get_values_json(self, value_dict:dict, value_name:str='check.json') -> None:
         """

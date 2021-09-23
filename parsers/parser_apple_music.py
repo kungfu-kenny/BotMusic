@@ -1,10 +1,7 @@
-import os
-import ast
 import aiohttp
 import asyncio
 from pprint import pprint
 from bs4 import BeautifulSoup
-import requests
 from config import (link_apple_music,
                     link_apple_music_us,
                     link_apple_music_space,

@@ -25,6 +25,7 @@ db_base = os.getenv("DB_BASE")
 db_pass = os.getenv("DB_PASSWORD")
 ######################CSV PARAMS###########################################
 
+#TODO rewrite this as class
 csv_basic = "Basic.csv"
 csv_year = "Year.csv"
 csv_edges = "Edges.csv"
@@ -39,7 +40,9 @@ csv_basic_song_fail = "Basic_Song_Failed.csv"
 csv_basic_song_apple = "Basic_Song_Apple.csv"
 csv_basic_song_deezer = "Basic_Song_Deezer.csv"
 csv_basic_song_genius = "Basic_Song_Genius.csv"
-csv_basic_song_deezer_select = "Basic_Song_Deezer_Selection.csv"
+csv_basic_album_deezer_good = "Basic_Album_Deezer_Good.csv"
+csv_basic_album_deezer_failed = "Basic_Album_Deezer_Failed.csv"
+csv_basic_album_deezer_select = "Basic_Album_Deezer_Selection.csv"
 ######################NAME DATABASE########################################
 
 table_user = 'user'
