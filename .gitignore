@@ -10,10 +10,19 @@ Basic_Label.csv
 Basic_Song_Apple.csv
 Basic_Song_Failed.csv
 Basic_Song_Genius.csv
+Basic_Song_Deezer.csv
+Basic_Album_Deezer_Failed.csv
+Basic_Album_Deezer_Possible.csv
+Basic_Album_Deezer_Successful.csv
 
 .~lock.Year.csv#
 .~lock.Basic.csv#
+.~lock.Albums.csv#
 .~lock.Basic_Song.csv#
 .~lock.Basic_Genre.csv#
 .~lock.Basic_Label.csv#
 .~lock.Basic_Song_Failed.csv#
+.~lock.Basic_Song_Deezer.csv#
+.~lock.Basic_Album_Deezer_Failed.csv#
+.~lock.Basic_Album_Deezer_Possible.csv#
+.~lock.Basic_Album_Deezer_Successful.csv#

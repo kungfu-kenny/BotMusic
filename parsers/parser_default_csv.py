@@ -22,6 +22,9 @@ from config import (csv_year,
                     csv_basic_song_apple,
                     csv_basic_song_deezer,
                     csv_basic_song_genius,
+                    csv_basic_album_deezer_failed,
+                    csv_basic_album_deezer_success,
+                    csv_basic_album_deezer_possible,
                     folder_current,
                     folder_storage,
                     folder_defaults)
@@ -43,10 +46,22 @@ class ParserDefaultCSV:
                                 'Album_Link', 'Album_Name_Genius', 'Artist_Name_Genius', 'Album_Date_Genius',
                                 'Album_Label_Genius', 'Songs_Lyrics', 'Song_Engineer', 'Song_Link', 'Song_Written',
                                 'Album_Producer', 'Song_Place_Recorded', 'Song_Release_Genius']
+        self.columns_deezer_songs = ["Album_ID", "Album_Name_Deezer", "Artist_Name_Deezer", "Year_Deezer", 
+                            "Label_Deezer", "Album_Duration", "Song_Order", "Album_Number_Tracks", "Song_Name_Deezer", 
+                            "Song_Author_Deezer", "Song_Length", "Song_Popularity_Deezer", "Song_Link_Deezer"]
+        self.columns_deezer_successful = ['Album_ID', 'Album_ID_Deezer', 'Album_Name_df', 'Artist_Name_df', 'Year_df',
+                        'Album_Name_Deezer', 'Artist_Name_Deezer', 'Artist_ID_Deezer', 'Release_Date_Physical',
+                        'Release_Date_Original', 'Album_Picture_Deezer', 'Album_Available_Deezer', 
+                        'Album_Version_Deezer','Explicit_Lyrics_Deezer', 'Explicit_Cover_Deezer', 'Type_INT_Deezer', 
+                        'Artist_Dummy_Deezer', 'Album_Number_Track_Deezer', 'Type_Deezer', 'Link_Searched_Deezer', 
+                        'Link_Album_Deezer', 'Checked_Album_Deezer', 'Checked_Artist_Deezer']
+        self.columns_deezer_failed = ["Album_ID", 'Album_Name_df', 'Artist_Name_df', 'Year_df', 'Link_Search_Failed_Deezer']
+        self.deezer_options = ['songs', 'successful', 'possible', 'failed']
+        self.json_deezer_names = ['deezer_songs.json', 'deezer_successfull.json', 'deezer_possible.json', 'deezer_failed.json']
         self.folder_defaults = os.path.join(folder_current, folder_defaults)
         # self.produce_basic_values_genius()
-        # self.produce_basic_values_deezer()
-        self.produce_basic_google_search()
+        self.produce_basic_values_deezer()
+        # self.produce_basic_google_search()
         
     def check_presence_files(self) -> bool:
         """
@@ -264,15 +279,155 @@ class ParserDefaultCSV:
         result.drop_duplicates(subset=subset, keep=keep, inplace=True)
         self.produce_basic_csv_save(result, df_path)
 
-    def produce_song_remake_values_weezer(self, value_list:list=[], value_check:bool=False, value_type:str='') -> list:
+    def produce_song_remake_values_deezer(self, value_list:list=[], value_check:bool=False, value_type:str='', value_name:str='') -> list:
         """
         Method which is dedicated to produce dataframe of the return and to stroe it in the dataframe if it is necessary
         Input:  value_list = value list which would have been successfully created
                 value_check = boolean value to signify that we have already provided 
                 value_type = value which shows which type is going to be searched
+                value_name = json values of t
         Output: list of the values which woulb be comfortable for use in the future
         """
-        pass
+        if value_type == 'songs':
+            columns = self.columns_deezer_songs
+            csv_name = csv_basic_song_deezer
+        elif value_type == 'successful':
+            columns = self.columns_deezer_successful
+            csv_name = csv_basic_album_deezer_success
+        elif value_type == 'possible':
+            columns = self.columns_deezer_successful
+            csv_name = csv_basic_album_deezer_possible
+        elif value_type == 'failed':
+            columns = self.columns_deezer_failed
+            csv_name = csv_basic_album_deezer_failed
+        value_path = os.path.join(folder_current, folder_storage, value_name)
+        if not value_list and not os.path.exists(value_path) and not os.path.isfile(value_path):
+            return
+        elif not value_list and not value_check:
+            with open(value_path, 'r') as value_file:
+                value_list = json.load(value_file)
+        
+        for value_parsed in value_list:
+            
+            if value_type == 'songs':
+                list_deezer_songs_parameters = value_parsed.get('Song Parameters', [{'empty':True}])
+                list_deezer_songs_name_song = [f.get('Song Name', '') for f in list_deezer_songs_parameters]
+                list_deezer_songs_link_song = [f.get('Song Link', '') for f in list_deezer_songs_parameters]
+                list_deezer_songs_author_song = [f.get('Song Author', '') for f in list_deezer_songs_parameters]
+                list_deezer_songs_length_song = [f.get('Song Length', '') for f in list_deezer_songs_parameters]
+                list_deezer_songs_popul_song = [f.get('Song Popularity', '') for f in list_deezer_songs_parameters]
+                value_len = len(list_deezer_songs_parameters)
+                
+                list_deezer_songs_order_song = [i for i in range(1, value_len + 1)]
+                list_deezer_songs_id = [value_parsed.get('Album_ID') for _ in range(value_len)]
+                list_deezer_songs_year = [value_parsed.get('Album Year').split('|')[-1].strip() for _ in range(value_len)]
+                list_deezer_songs_length = [value_parsed.get('Album Duration') for _ in range(value_len)]
+                list_deezer_songs_name = [value_parsed.get('Album Name', '') for _ in range(value_len)]
+                list_deezer_songs_artist = [value_parsed.get('Album Artist', '') for _ in range(value_len)]
+                list_deezer_songs_label = [value_parsed.get('Album Label', '').split('|')[-1].strip() for _ in range(value_len)]
+                list_deezer_songs_tracks = [int(value_parsed.get('Album Number Tracks', '')) for _ in range(value_len)]
+
+                value_df = pd.DataFrame(list(zip(list_deezer_songs_id, list_deezer_songs_name, list_deezer_songs_artist,
+                                        list_deezer_songs_year, list_deezer_songs_label, list_deezer_songs_length, 
+                                        list_deezer_songs_order_song, list_deezer_songs_tracks, list_deezer_songs_name_song, 
+                                        list_deezer_songs_author_song, list_deezer_songs_length_song,
+                                        list_deezer_songs_popul_song, list_deezer_songs_link_song)), columns=columns)
+
+            if value_type == 'successful':
+                list_deezer_successful_id_deezer = [value_parsed.get('ALB_ID', '')]
+                list_deezer_successful_name_deezer = [value_parsed.get('ALB_TITLE', '')]
+                list_deezer_successful_picture = [value_parsed.get('ALB_PICTURE', '')]
+                list_deezer_successful_available = [value_parsed.get('AVAILABLE', '')]
+                list_deezer_successful_version = [value_parsed.get('VERSION', '')]
+                list_deezer_successful_artist_id_deezer = [value_parsed.get('ART_ID', '')]
+                list_deezer_successful_artist_deezer = [value_parsed.get('ART_NAME', '')]
+
+                list_deezer_successful_explicit = value_parsed.get("EXPLICIT_ALBUM_CONTENT", {})
+                list_deezer_successful_explicit_lyrics = [list_deezer_successful_explicit.get("EXPLICIT_LYRICS_STATUS", 0)]
+                list_deezer_successful_explicit_cover = [list_deezer_successful_explicit.get("EXPLICIT_COVER_STATUS", 0)]
+                
+                list_deezer_successful_release_date_physical = [value_parsed.get("PHYSICAL_RELEASE_DATE", '')]
+                list_deezer_successful_type_int = [value_parsed.get("TYPE", 0)]
+                list_deezer_successful_artist_dummy = [value_parsed.get("ARTIST_IS_DUMMY", False)]
+                list_deezer_successful_number_track = [int(value_parsed.get("NUMBER_TRACK", '0'))]
+                list_deezer_successful_release_date_original = [value_parsed.get("ORIGINAL_RELEASE_DATE", '')]
+                list_deezer_successful_type = [value_parsed.get("__TYPE__", '')]
+                list_deezer_successful_name = [value_parsed.get('Album Searched', '')]
+                list_deezer_successful_artist = [value_parsed.get('Artist Searched', '')]
+                list_deezer_successful_year = [value_parsed.get('Year Searched', '')]
+                list_deezer_successful_link_searched = [value_parsed.get('Link Searched', '')]
+                list_deezer_successful_link_album = [value_parsed.get('Link Album', '')]
+                list_deezer_successful_checked_album = [value_parsed.get('Checked Album', False)]
+                list_deezer_successful_checked_artist = [value_parsed.get('Checked Artist', False)]
+                list_deezer_successful_id = [value_parsed.get('Album_ID', 0)]
+
+                value_df = pd.DataFrame(list(zip(list_deezer_successful_id, list_deezer_successful_id_deezer, 
+                                        list_deezer_successful_name, list_deezer_successful_artist, list_deezer_successful_year,
+                                        list_deezer_successful_name_deezer, list_deezer_successful_artist_deezer, 
+                                        list_deezer_successful_artist_id_deezer, list_deezer_successful_release_date_physical,
+                                        list_deezer_successful_release_date_original, list_deezer_successful_picture,
+                                        list_deezer_successful_available, list_deezer_successful_version,
+                                        list_deezer_successful_explicit_lyrics, list_deezer_successful_explicit_cover,
+                                        list_deezer_successful_type_int, list_deezer_successful_artist_dummy,
+                                        list_deezer_successful_number_track, list_deezer_successful_type,
+                                        list_deezer_successful_link_searched, list_deezer_successful_link_album,
+                                        list_deezer_successful_checked_album, list_deezer_successful_checked_artist)), columns=columns)
+                if all(list_deezer_successful_id_deezer):
+                    self.produce_merge_dataframe(value_df, columns, csv_name)
+
+            if value_type == 'possible':
+                value_df = pd.DataFrame([], columns=columns)
+                list_deezer_successful_id_deezer = [f.get('ALB_ID', '') for f in value_parsed]
+                list_deezer_successful_name_deezer = [f.get('ALB_TITLE', '') for f in value_parsed]
+                list_deezer_successful_picture = [f.get('ALB_PICTURE', '') for f in value_parsed]
+                list_deezer_successful_available = [f.get('AVAILABLE', '') for f in value_parsed]
+                list_deezer_successful_version = [f.get('VERSION', '') for f in value_parsed]
+                list_deezer_successful_artist_id_deezer = [f.get('ART_ID', '') for f in value_parsed]
+                list_deezer_successful_artist_deezer = [f.get('ART_NAME', '') for f in value_parsed]
+
+                list_deezer_successful_explicit = [f.get("EXPLICIT_ALBUM_CONTENT", {}) for f in value_parsed]
+                list_deezer_successful_explicit_lyrics = [f.get("EXPLICIT_LYRICS_STATUS", 0) for f in list_deezer_successful_explicit]
+                list_deezer_successful_explicit_cover = [f.get("EXPLICIT_COVER_STATUS", 0) for f in list_deezer_successful_explicit]
+                
+                list_deezer_successful_release_date_physical = [f.get("PHYSICAL_RELEASE_DATE", '') for f in value_parsed]
+                list_deezer_successful_type_int = [f.get("TYPE", 0) for f in value_parsed]
+                list_deezer_successful_artist_dummy = [f.get("ARTIST_IS_DUMMY", False) for f in value_parsed]
+                list_deezer_successful_number_track = [int(f.get("NUMBER_TRACK", '0')) for f in value_parsed]
+                list_deezer_successful_release_date_original = [f.get("ORIGINAL_RELEASE_DATE", '') for f in value_parsed]
+                list_deezer_successful_type = [f.get("__TYPE__", '') for f in value_parsed]
+                list_deezer_successful_name = [f.get('Album Searched', '') for f in value_parsed]
+                list_deezer_successful_artist = [f.get('Artist Searched', '') for f in value_parsed]
+                list_deezer_successful_year = [f.get('Year Searched', '') for f in value_parsed]
+                list_deezer_successful_link_searched = [f.get('Link Searched', '') for f in value_parsed]
+                list_deezer_successful_link_album = [f.get('Link Album', '') for f in value_parsed]
+                list_deezer_successful_checked_album = [f.get('Checked Album', False) for f in value_parsed]
+                list_deezer_successful_checked_artist = [f.get('Checked Artist', False) for f in value_parsed]
+                list_deezer_successful_id = [f.get('Album_ID', 0) for f in value_parsed]
+
+                value_df = pd.DataFrame(list(zip(list_deezer_successful_id, list_deezer_successful_id_deezer, 
+                        list_deezer_successful_name, list_deezer_successful_artist, list_deezer_successful_year,
+                        list_deezer_successful_name_deezer, list_deezer_successful_artist_deezer, 
+                        list_deezer_successful_artist_id_deezer, list_deezer_successful_release_date_physical,
+                        list_deezer_successful_release_date_original, list_deezer_successful_picture,
+                        list_deezer_successful_available, list_deezer_successful_version,
+                        list_deezer_successful_explicit_lyrics, list_deezer_successful_explicit_cover,
+                        list_deezer_successful_type_int, list_deezer_successful_artist_dummy,
+                        list_deezer_successful_number_track, list_deezer_successful_type,
+                        list_deezer_successful_link_searched, list_deezer_successful_link_album,
+                        list_deezer_successful_checked_album, list_deezer_successful_checked_artist)), columns=columns)
+
+            if value_type == 'failed':
+                list_deezer_failed_id = [value_parsed.get("Album_ID", -1)]
+                list_deezer_failed_artist = [value_parsed.get("Album_Artist_Deezer", '')]
+                list_deezer_failed_name = [value_parsed.get("Album_Name_Deezer", '')]
+                list_deezer_failed_year = [value_parsed.get("Album_Year_Deezer", '')]
+                list_deezer_failed_link = [value_parsed.get("Link_Failed_Deezer", '')]
+                
+                value_df = pd.DataFrame(list(zip(list_deezer_failed_id, list_deezer_failed_artist, 
+                                        list_deezer_failed_name, list_deezer_failed_year, 
+                                        list_deezer_failed_link)), columns=columns)
+            if value_type != "successful":
+                self.produce_merge_dataframe(value_df, columns, csv_name)
 
     def produce_song_remake_values_genius(self, value_song_dict={}, value_check:bool=False) -> list:
         """
@@ -382,18 +537,6 @@ class ParserDefaultCSV:
                     columns=['Album_ID', 'Album_Name_df', 'Artist_Name_df', 'Year_df', 'Album_Link_Previous'])
                 self.produce_merge_dataframe_old(value_df, True)                
 
-    def reproduce_search_songs(self) -> None:
-        """
-        Method which is dedicated to get secondary values of the songs which were not got from the 
-        Input:  value_song_list = value songs list of the 
-        Output: get list values of the returnal of the returnal for the subsearch of it
-        """
-        pass
-        #TODO work here
-        #TODO firstly; to check on the default, and to get after that from them html
-        #TODO secondly; after the check of it, if shw must to get from it data manually
-        #TODO thirdly; 
-
     @staticmethod
     def make_list_sublists(value_list:list, default_val:int=10) -> list:
         """
@@ -490,6 +633,10 @@ class ParserDefaultCSV:
         failed = transform_value_failed(failed)
         value_search = [[i.get('Artist Searched', ''), i.get('Album Searched', ''), 
                         i.get('Year Searched', '')] for i in found if i]
+        value_search_possible = [[i[0].get('Artist Searched', ''), i[0].get('Album Searched', ''), 
+                        i[0].get('Year Searched', '')] for i in possible if i]
+        found = [f for f in found if f]
+        possible = [p for p in possible if p]
         index_next = 0
         for index, artist, album, year in zip(id, artists, names, years):
             search = [artist, album, year]
@@ -497,10 +644,13 @@ class ParserDefaultCSV:
                 value_index = value_search.index(search)
                 songs[value_index].update({"Album_ID": index})
                 found[value_index].update({"Album_ID": index})
-                [i.update({"Album_ID": index}) for i in possible[value_index]]
+                
             else:
                 failed[index_next].update({"Album_ID": index, "Album_Year_Deezer": year})
                 index_next = index_next + 1
+            if search in value_search_possible:
+                value_index = value_search_possible.index(search)
+                [i.update({"Album_ID": index}) for i in possible[value_index] if i]
         return songs, found, possible, failed               
 
     def produce_basic_values_deezer(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
@@ -514,7 +664,7 @@ class ParserDefaultCSV:
         if df_calculated.empty:
             df_calculated = pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
         values_id, values_album, values_artist, values_year = self.get_values_songs_usage(csv_basic_song_deezer)
-        for value_id, value_album, value_artist, value_year in zip(values_id[:1], values_album[:1], values_artist[:1], values_year[:1]):
+        for value_id, value_album, value_artist, value_year in zip(values_id[:2], values_album[:2], values_artist[:2], values_year[:2]):
             start = time.time()
             loop = asyncio.get_event_loop()
             value_songs, value_found, value_possible, value_failed = \
@@ -534,9 +684,10 @@ class ParserDefaultCSV:
             value_msg = '\n'.join([f"+ {i.get('Album_Name_Deezer', '')}" for i in value_failed])
             print(f'We failed to find such albums:\n{value_msg}')
             print('=============================================================================')
-            
-            #TODO add here these values of savings
-            self.produce_song_remake_values_weezer()
+
+            for save_value, save_backup, save_option in zip(value_got, self.json_deezer_names, self.deezer_options):
+                self.get_values_json(save_value, save_backup)
+                self.produce_song_remake_values_deezer(save_value, 1, save_option, save_backup)
             print(f'It took time: {time.time() - start}')
             print('#############################################################################')
 
@@ -552,6 +703,14 @@ class ParserDefaultCSV:
             df_calculated = pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
         values_id, values_album, values_artist, values_year = self.get_values_songs_usage(csv_basic_song_deezer)
         parser_google_search.produce_manually_search_albums_google()
+
+    def produce_whole_basic_searches(self) -> None:
+        """
+        Method which is dedicated to produce basic parse of the whole values of it
+        Input:  previously values which were given from the csv values 
+        Output: we created all possible values from the 
+        """
+        
 
     def get_values_json(self, value_dict:dict, value_name:str='check.json') -> None:
         """
