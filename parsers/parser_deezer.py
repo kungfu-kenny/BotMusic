@@ -5,11 +5,15 @@ import asyncio
 from pprint import pprint
 from bs4 import BeautifulSoup
 from config import (link_deezer, 
+                    link_deezer_a,
                     link_deezer_us,
+                    link_deezer_box,
                     link_deezer_album,
                     link_deezer_space,
                     link_deezer_dollar,
                     link_deezer_search,
+                    link_deezer_comsep,
+                    link_deezer_doublecom,
                     deezer_semaphore_threads)
 
 
@@ -40,8 +44,9 @@ class ParserDeezer:
         Input:  value_insert = inserted values for the change
         Output: inserted values with minor change of the string
         """
-        for value_replace in ['$']:
-            value_insert = value_insert.replace(value_replace, link_deezer_dollar)
+        for value_replace, value_new in [('$', link_deezer_dollar), ('@', link_deezer_a), ('#', link_deezer_box)
+                                        (';', link_deezer_comsep), (':', link_deezer_doublecom)]:
+            value_insert = value_insert.replace(value_replace, value_new)
         return value_insert
 
     async def get_links_values_albums(self, value_artists:list, value_albums:list) -> list:

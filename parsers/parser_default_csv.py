@@ -162,7 +162,7 @@ class ParserDefaultCSV:
             df_calculated.Album_Name=df_calculated.Album_Name.str.replace(i, '', regex=True)
         return df_calculated, df_genre_id
 
-    def produce_basic_value(self) -> None:
+    def produce_basic_value(self) -> pd.DataFrame():
         """
         Method which is dedicated to produce basic value of the dataframe for the 
         Input:  values of the parser
@@ -173,7 +173,7 @@ class ParserDefaultCSV:
             return
         if self.check_presence_work_previous():
             #TODO add here print or log
-            return
+            return pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
         df_albums = pd.read_csv(os.path.join(self.folder_defaults, csv_albums))
         df_genre = pd.read_csv(os.path.join(self.folder_defaults, csv_genre))
         df_artist = pd.read_csv(os.path.join(self.folder_defaults, csv_artist))
@@ -223,7 +223,8 @@ class ParserDefaultCSV:
 
         for df_value, value_name in zip([df_calculated, df_genre_id], [csv_basic, csv_basic_genre]):
             self.produce_basic_csv_save(df_value, os.path.join(self.folder_defaults, value_name))
-        
+        return df_calculated
+
     @staticmethod
     def produce_basic_csv_save(df_value:pd.DataFrame, value_path:str) -> None:
         """
@@ -586,10 +587,9 @@ class ParserDefaultCSV:
         Input:  pd_calculated = basic dataframe which was fully commited from the
         Output: we created new dataframe values for the insertion; for the label and for the 
         """
-        self.produce_basic_value()
         parser_genius = ParserGenius()
         if df_calculated.empty:
-            df_calculated = pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
+            df_calculated = self.produce_basic_value()
         values_id, values_album, values_artist, values_year = self.get_values_songs_usage(csv_basic_song_genius)
         
         for value_id, value_album, value_artist, value_year in zip(values_id[:1], values_album[:1], values_artist[:1], values_year[:1]):
@@ -631,12 +631,11 @@ class ParserDefaultCSV:
                     "Album_Artist_Deezer": artist} for link, name, artist in value_failed]
         
         failed = transform_value_failed(failed)
+        found, possible = [f for f in found if f], [p for p in possible if p] 
         value_search = [[i.get('Artist Searched', ''), i.get('Album Searched', ''), 
                         i.get('Year Searched', '')] for i in found if i]
         value_search_possible = [[i[0].get('Artist Searched', ''), i[0].get('Album Searched', ''), 
                         i[0].get('Year Searched', '')] for i in possible if i]
-        found = [f for f in found if f]
-        possible = [p for p in possible if p]
         index_next = 0
         for index, artist, album, year in zip(id, artists, names, years):
             search = [artist, album, year]
@@ -659,10 +658,9 @@ class ParserDefaultCSV:
         Input:  df_calculated = dataframe which was previously calculated to it
         Output: we created new dataframe which is fully compatible with the previous dataframes and returns to us values
         """
-        self.produce_basic_value()
         parser_deezer = ParserDeezer()
         if df_calculated.empty:
-            df_calculated = pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
+            df_calculated = self.produce_basic_value()
         values_id, values_album, values_artist, values_year = self.get_values_songs_usage(csv_basic_song_deezer)
         for value_id, value_album, value_artist, value_year in zip(values_id[:2], values_album[:2], values_artist[:2], values_year[:2]):
             start = time.time()
@@ -697,12 +695,19 @@ class ParserDefaultCSV:
         Input:  df_calculated = previously calculated dataframe from the got values
         Output: we successfully parsed values from the 
         """
-        self.produce_basic_value()
         parser_google_search = ParserGoogleSearch()
         if df_calculated.empty:
-            df_calculated = pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
+            df_calculated = self.produce_basic_value()
         values_id, values_album, values_artist, values_year = self.get_values_songs_usage(csv_basic_song_deezer)
         parser_google_search.produce_manually_search_albums_google()
+
+    def produce_basic_yandex_search(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
+        """
+        Method which is dedicated to produce values of the returnal and getting values of the searcher
+        Input:  df_calculated = calculated values previously by the got .csv values
+        Output: we created parsed dataframe values from the 
+        """
+        pass
 
     def produce_whole_basic_searches(self) -> None:
         """
@@ -710,7 +715,8 @@ class ParserDefaultCSV:
         Input:  previously values which were given from the csv values 
         Output: we created all possible values from the 
         """
-        
+        df_calculated = self.produce_basic_value()
+        #TODO get here list of fully parsed parsed
 
     def get_values_json(self, value_dict:dict, value_name:str='check.json') -> None:
         """

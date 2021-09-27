@@ -91,3 +91,20 @@ link_deezer_album = 'album'
 link_deezer_search = 'search'
 link_deezer_space = '%20'
 link_deezer_dollar = '%24'
+link_deezer_doublecom = '%3A'
+link_deezer_a = '%40'
+link_deezer_box = "%23"
+link_deezer_comsep = '%3B'
+#######################PARSE YANDEX########################################
+
+class LinkYandex:
+    yandex_semaphore_threads = 10
+    link_yandex = 'https://music.yandex.ru'
+    link_yandex_album = 'album'
+    link_yandex_search = 'search?'
+    link_yandex_a = '%40'
+    link_yandex_box = "%23"
+    link_yandex_comsep = '%3B'
+    link_yandex_space = '%20'
+    link_yandex_dollar = '%24'
+    link_yandex_doublecom = '%3A'
