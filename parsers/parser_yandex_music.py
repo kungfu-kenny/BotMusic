@@ -23,12 +23,31 @@ class ParserYandexMusic:
         Input:  value_list = list of the parsed searches of the 
         Output: set with the values of the refreshings
         """
-        #TODO get values of the successfull
-        #TODO get values of the successfull all
-        #TODO get values of the possible
-        #TODO get values of the failed
-        pass
-
+        values_result, values_successfull, values_possible = [], [], []
+        for value_album_searches in value_list:
+            value_successfull, value_possible, value_failed = [], [], []
+            for value_album_search in value_album_searches:
+                if value_album_search.get('Album Present', False) and \
+                        value_album_search.get('Year Present', False) and \
+                        value_album_search.get('Artist Present', False):
+                    value_successfull.append(value_album_search)
+                    value_possible.append(value_album_search)
+                elif (value_album_search.get('Artist Present', False) and \
+                        value_album_search.get("Year Present", False) and \
+                        not value_album_search.get('Album Present', False)) or \
+                        (not value_album_search.get('Artist Present', False) and \
+                        value_album_search.get("Year Present", False) and \
+                        value_album_search.get('Album Present', False)) or \
+                        (value_album_search.get('Artist Present', False) and \
+                        not value_album_search.get("Year Present", False) and \
+                        value_album_search.get('Album Present', False)):
+                    value_possible.append(value_album_search)
+            if value_successfull:
+                values_result.append(value_successfull[0])
+            values_successfull.extend(value_successfull)
+            values_possible.extend(value_possible)
+        return values_result, values_successfull, values_possible
+        
     async def produce_links(self, value_artist:str, value_album:str) -> set:
         """
         Method which is dedicated to produce links for the album
@@ -111,8 +130,19 @@ class ParserYandexMusic:
             print(e)
             print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
             soup = {}
-        
-
+        value_dict['Album Description'] = soup.get('description', '')
+        value_dict['Album Genre'] = soup.get('genre', '')
+        value_dict['Album Name'] = soup.get('name', '')
+        value_dict['Number Tracks'] = soup.get('numTracks', 0)
+        value_dict['Album Image'] = soup.get('image', '')
+        value_dict['Artist Name'] = soup.get("byArtist", {}).get('name', '')
+        value_dict['Artist Link'] = soup.get("byArtist", {}).get('url', '')
+        value_dict['Album Songs'] = [f.get("name", '') for f in soup.get('track', [])]
+        value_dict['Album Songs Number'] = [i + 1 for i in range(len(value_dict.get('Album Songs', [])))]
+        value_dict['Album Songs Link'] = [f.get("url", '') for f in soup.get('track', [])]
+        value_dict['Album Songs ID'] = [f.get("url", '').split(f'{LinkYandex.link_yandex_track}/')[-1] for f in soup.get('track', [])]
+        value_dict['Album Songs Duration'] = [f.get("duration", '') for f in soup.get('track', [])]
+        return value_dict
 
     @staticmethod
     async def produce_basic_json_results_album(value_html:str, link:str, album:str, artist:str, year:str) -> list:
@@ -188,18 +218,40 @@ class ParserYandexMusic:
         Output: set of selected values of the search within 
         """
         links = await self.produce_list_selected_links(value_artists, value_albums)
-        print(links)
-        print('mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm')
         semaphore = asyncio.Semaphore(LinkYandex.yandex_semaphore_threads)
         async with semaphore:
             async with aiohttp.ClientSession(trust_env=True) as session:
                 value_return = await self.make_html_links(session, links)
         tasks = [asyncio.create_task(self.produce_basic_json_results_album(value_html, link, album, artist, year)) 
-                for value_html, (link, album, artist), year in zip(value_return[:1], links[:1], value_years[:1])] 
-                # for value_html, (link,{} album, artist), year in zip(value_return, links, value_years)]
+                for value_html, (link, album, artist), year in zip(value_return, links, value_years)]
         results = await asyncio.gather(*tasks)
-        pprint(results)
-
-
-        # k = requests.get('https://music.yandex.ru/album/3277242').text
-        # await self.produce_album_song_info(k)
+        value_result, value_successfull, value_possible = self.produce_refresh_values(results)
+        async with semaphore:
+            async with aiohttp.ClientSession(trust_env=True) as session:
+                value_return = await self.make_html_links(session, [f.get('Album Link', 'Undefined') for f in value_result], True)
+        tasks = [asyncio.create_task(self.produce_album_song_info(html)) for html in value_return]
+        value_albums = await asyncio.gather(*tasks)
+        value_albums_additional = []
+        #TODO add here values to the getting text
+        async with semaphore:
+            async with aiohttp.ClientSession(trust_env=True) as session:
+                for value_album in value_albums[:1]:
+                    print(value_album.get('Album Songs Link', []))
+                    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+                    value_return = await self.make_html_links(session, value_album.get('Album Songs Link', []), True)
+                # print(value_return[0])
+                soup = BeautifulSoup(value_return[0], 'html.parser')
+                soup = soup.find(class_='theme-white')
+                soup = soup.find('script').text[7:-1]
+                try:
+                    soup = json.loads(soup)
+                except Exception as e:
+                    print(e)
+                    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+                    soup = {}
+                # pprint(soup)
+                # /home/cmdb-123851/Projects/BotMusic/storage/check_1.json
+                with open('/home/cmdb-123851/Projects/BotMusic/storage/check_3.json', 'w') as fp:
+                    json.dump(soup, fp, indent=4)
+        # pprint(value_albums[0])
+        return value_albums, value_result, value_successfull, value_possible

@@ -101,6 +101,7 @@ class LinkYandex:
     yandex_semaphore_threads = 10
     link_yandex = 'https://music.yandex.ru'
     link_yandex_album = 'album'
+    link_yandex_track = 'track'
     link_yandex_search = 'search?'
     link_yandex_a = '%40'
     link_yandex_box = "%23"
