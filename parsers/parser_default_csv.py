@@ -8,6 +8,7 @@ import pandas as pd
 from parsers.parser_genius import ParserGenius
 from parsers.parser_deezer import ParserDeezer
 from parsers.parser_apple_music import ParserAppleMusic
+from parsers.parser_yandex_music import ParserYandexMusic
 from parsers.parser_google_searches import ParserGoogleSearch
 from config import (csv_year,
                     csv_basic,
@@ -60,8 +61,9 @@ class ParserDefaultCSV:
         self.json_deezer_names = ['deezer_songs.json', 'deezer_successfull.json', 'deezer_possible.json', 'deezer_failed.json']
         self.folder_defaults = os.path.join(folder_current, folder_defaults)
         # self.produce_basic_values_genius()
-        self.produce_basic_values_deezer()
+        # self.produce_basic_values_deezer()
         # self.produce_basic_google_search()
+        self.produce_basic_yandex_search()
         
     def check_presence_files(self) -> bool:
         """
@@ -707,7 +709,13 @@ class ParserDefaultCSV:
         Input:  df_calculated = calculated values previously by the got .csv values
         Output: we created parsed dataframe values from the 
         """
-        pass
+        parser_yandex_music = ParserYandexMusic()
+        if df_calculated.empty:
+            df_calculated = self.produce_basic_value()
+        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(csv_basic_song_deezer)
+        for value_id, value_album, value_artist, value_year in zip(values_id, values_album, values_artist, values_year):
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(parser_yandex_music.produce_manual_albums_search_yandex(value_album, value_artist, value_year))
 
     def produce_whole_basic_searches(self) -> None:
         """
