@@ -1,4 +1,5 @@
 import os
+from attr import dataclass
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,38 +12,43 @@ chat_id_default = os.getenv('CHAT_ID_DEFAULT')
 telegram_start = 'start'
 ######################BLOCK FOLDERS########################################
 
-folder_db = "db"
-folder_storage = "storage"
-folder_defaults = "defaults"
-folder_telegram = "telegram"
-folder_current = os.getcwd()
+@dataclass
+class FolderProject:
+    folder_db = "db"
+    folder_storage = "storage"
+    folder_defaults = "defaults"
+    folder_telegram = "telegram"
+    folder_current = os.getcwd()    
 ######################CRED DATABASE########################################
 
-db_file = "local.db"
-db_host = os.getenv("DB_HOST")
-db_name = os.getenv("DB_NAME")
-db_base = os.getenv("DB_BASE")
-db_pass = os.getenv("DB_PASSWORD")
+@dataclass
+class DataBaseCredentials:
+    db_file = "local.db"
+    db_host = os.getenv("DB_HOST")
+    db_name = os.getenv("DB_NAME")
+    db_base = os.getenv("DB_BASE")
+    db_pass = os.getenv("DB_PASSWORD")
 ######################CSV PARAMS###########################################
 
-#TODO rewrite this as class
-csv_basic = "Basic.csv"
-csv_year = "Year.csv"
-csv_edges = "Edges.csv"
-csv_genre = "Genre.csv"
-csv_albums = "Albums.csv"
-csv_artist = "Artist.csv"
-csv_subgenre = "Subgenre.csv"
-csv_basic_song = "Basic_Song.csv"
-csv_basic_label = "Basic_Label.csv"
-csv_basic_genre = "Basic_Genre.csv"
-csv_basic_song_fail = "Basic_Song_Failed.csv"
-csv_basic_song_apple = "Basic_Song_Apple.csv"
-csv_basic_song_deezer = "Basic_Song_Deezer.csv"
-csv_basic_song_genius = "Basic_Song_Genius.csv"
-csv_basic_album_deezer_failed = "Basic_Album_Deezer_Failed.csv"
-csv_basic_album_deezer_possible = "Basic_Album_Deezer_Possible.csv"
-csv_basic_album_deezer_success = "Basic_Album_Deezer_Successful.csv"
+@dataclass
+class CSVNames:
+    csv_basic = "Basic.csv"
+    csv_year = "Year.csv"
+    csv_edges = "Edges.csv"
+    csv_genre = "Genre.csv"
+    csv_albums = "Albums.csv"
+    csv_artist = "Artist.csv"
+    csv_subgenre = "Subgenre.csv"
+    csv_basic_song = "Basic_Song.csv"
+    csv_basic_label = "Basic_Label.csv"
+    csv_basic_genre = "Basic_Genre.csv"
+    csv_basic_song_fail = "Basic_Song_Failed.csv"
+    csv_basic_song_apple = "Basic_Song_Apple.csv"
+    csv_basic_song_deezer = "Basic_Song_Deezer.csv"
+    csv_basic_song_genius = "Basic_Song_Genius.csv"
+    csv_basic_album_deezer_failed = "Basic_Album_Deezer_Failed.csv"
+    csv_basic_album_deezer_possible = "Basic_Album_Deezer_Possible.csv"
+    csv_basic_album_deezer_success = "Basic_Album_Deezer_Successful.csv"    
 ######################NAME DATABASE########################################
 
 table_user = 'user'
@@ -70,33 +76,40 @@ table_user_favourite_song = 'user_favourite_song'
 table_user_favourite_album = 'user_favourite_album'
 #######################PARSE GENIUS########################################
 
-genius_semaphore_threads = 10
-link_genius = "https://genius.com"
-link_genius_albums = "albums"
-link_genius_search_begin = "/search?q="
-link_genius_search_end= "%20"
+@dataclass
+class LinkGenius:
+    genius_semaphore_threads = 10
+    link_genius = "https://genius.com"
+    link_genius_albums = "albums"
+    link_genius_search_begin = "/search?q="
+    link_genius_search_end= "%20"
 #######################PARSE APPLE MUSIC###################################
 
-apple_music_semaphore_threads = 10
-link_apple_music = 'https://music.apple.com'
-link_apple_music_us = 'us'
-link_apple_music_space = '%20'
-link_apple_music_search = 'search?term='
+@dataclass
+class LinkAppleMusic:
+    apple_music_semaphore_threads = 10
+    link_apple_music = 'https://music.apple.com'
+    link_apple_music_us = 'us'
+    link_apple_music_space = '%20'
+    link_apple_music_search = 'search?term='    
 #######################PARSE DEEZER########################################
 
-deezer_semaphore_threads = 10
-link_deezer = 'https://www.deezer.com'
-link_deezer_us = 'us'
-link_deezer_album = 'album'
-link_deezer_search = 'search'
-link_deezer_space = '%20'
-link_deezer_dollar = '%24'
-link_deezer_doublecom = '%3A'
-link_deezer_a = '%40'
-link_deezer_box = "%23"
-link_deezer_comsep = '%3B'
+@dataclass
+class LinkDeezer:
+    deezer_semaphore_threads = 10
+    link_deezer = 'https://www.deezer.com'
+    link_deezer_us = 'us'
+    link_deezer_album = 'album'
+    link_deezer_search = 'search'
+    link_deezer_space = '%20'
+    link_deezer_dollar = '%24'
+    link_deezer_doublecom = '%3A'
+    link_deezer_a = '%40'
+    link_deezer_box = "%23"
+    link_deezer_comsep = '%3B'
 #######################PARSE YANDEX########################################
 
+@dataclass
 class LinkYandex:
     yandex_semaphore_threads = 10
     link_yandex = 'https://music.yandex.ru'

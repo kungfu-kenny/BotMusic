@@ -25,7 +25,7 @@ class ParserYandexMusic:
         """
         values_result, values_successfull, values_possible = [], [], []
         for value_album_searches in value_list:
-            value_successfull, value_possible, value_failed = [], [], []
+            value_successfull, value_possible = [], []
             for value_album_search in value_album_searches:
                 if value_album_search.get('Album Present', False) and \
                         value_album_search.get('Year Present', False) and \
@@ -209,12 +209,58 @@ class ParserYandexMusic:
         [album.update(artist) for album, artist in zip(value_albums, value_artists)]
         return value_albums
 
-    async def produce_manual_albums_search_yandex(self, value_artists:list, value_albums:list, value_years:list) -> set:
+    @staticmethod
+    async def produced_detailed_song_info(html:str) -> dict:
+        """
+        Async method which is dedicated to produce the detailed songs information about the values
+        Input:  value_html = html which was parsed from the song information
+        Output: dictionary with previously parsed values of the 
+        """
+        value_dict = {}
+        if len(html) < 1000:
+            return value_dict
+        soup = BeautifulSoup(html, 'html.parser')
+        soup = soup.find(class_='theme-white')
+        soup = soup.find('script').text[7:-1]
+        try:
+            soup = json.loads(soup)
+        except Exception as e:
+            print(e)
+            print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+            soup = {}
+        soup = soup.get('sidebarData', {})
+        soup_lyrics = soup.get('lyric', {})
+        soup_song_album = soup.get('track', {}).get('albums', [])
+        soup_song_artist = soup.get('track', {}).get('artists', [])
+        
+        value_dict['Song Lyrics'] = soup_lyrics[0].get('fullLyrics', '') if soup_lyrics else ''
+        value_dict['Song Lyrics Language'] = soup_lyrics[0].get('textLanguage', 'unknown') if soup_lyrics else 'unknown'
+        value_dict['Song IDs'] = [f.get('id', 0) for f in soup_song_album]
+        value_dict['Song Contents'] = [f.get('contentWarning', '') for f in soup_song_album]
+        value_dict['Song Genres'] = [f.get('genre', '') for f in soup_song_album]
+        value_dict['Song Years'] = [f.get('year', 0) for f in soup_song_album]
+        value_dict['Song Versions'] = [f.get('version', '') for f in soup_song_album]
+        value_dict['Song Positions'] = [f.get('trackPosition', {}).get('index', 0) for f in soup_song_album]
+        value_dict['Song Titles'] = [f.get('title', '') for f in soup_song_album]
+        value_dict['Song Yandex Important'] = [f.get('veryImportant', False) for f in soup_song_album]
+        value_dict['Song Album Tracks'] = [f.get('trackCount', 0) for f in soup_song_album]
+        value_dict['Song Label Names'] = [[f.get('name', '') for f in value_f.get('labels', [])] for value_f in soup_song_album]
+        value_dict['Song Label IDs'] = [[f.get('id', 0) for f in value_f.get('labels', [])] for value_f in soup_song_album]
+        value_dict['Song Artist Ids'] = [[f.get('id', 0) for f in value_f.get('artists', [])] for value_f in soup_song_album]
+        value_dict['Song Artist Names'] = [[f.get('name', '') for f in value_f.get('artists', [])] for value_f in soup_song_album]
+        
+        value_dict['Artist Composer Booleans'] = [f.get('composer', False) for f in soup_song_artist]
+        value_dict['Artist IDs'] = [f.get('id', 0) for f in soup_song_artist]
+        value_dict['Artist Names'] = [f.get('name', '') for f in soup_song_artist]
+        return value_dict
+
+    async def produce_manual_albums_search_yandex(self, value_artists:list, value_albums:list, value_years:list, value_text:bool=False) -> set:
         """
         Method which is dedicated to produce manual search of the 
         Input:  value_album = list with the albums which were used
                 value_artist = list with artists which those album wrote
                 value_year = list with years of selected values
+                value_text = boolean values for the getting additional text of the returning it
         Output: set of selected values of the search within 
         """
         links = await self.produce_list_selected_links(value_artists, value_albums)
@@ -232,26 +278,11 @@ class ParserYandexMusic:
         tasks = [asyncio.create_task(self.produce_album_song_info(html)) for html in value_return]
         value_albums = await asyncio.gather(*tasks)
         value_albums_additional = []
-        #TODO add here values to the getting text
+        if value_text:
+            return value_albums, value_result, value_successfull, value_possible, value_albums_additional
         async with semaphore:
             async with aiohttp.ClientSession(trust_env=True) as session:
-                for value_album in value_albums[:1]:
-                    print(value_album.get('Album Songs Link', []))
-                    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+                for value_album in value_albums:
                     value_return = await self.make_html_links(session, value_album.get('Album Songs Link', []), True)
-                # print(value_return[0])
-                soup = BeautifulSoup(value_return[0], 'html.parser')
-                soup = soup.find(class_='theme-white')
-                soup = soup.find('script').text[7:-1]
-                try:
-                    soup = json.loads(soup)
-                except Exception as e:
-                    print(e)
-                    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-                    soup = {}
-                # pprint(soup)
-                # /home/cmdb-123851/Projects/BotMusic/storage/check_1.json
-                with open('/home/cmdb-123851/Projects/BotMusic/storage/check_3.json', 'w') as fp:
-                    json.dump(soup, fp, indent=4)
-        # pprint(value_albums[0])
-        return value_albums, value_result, value_successfull, value_possible
+                    value_albums_additional.append([await self.produced_detailed_song_info(val_return) for val_return in value_return])
+        return value_albums, value_result, value_successfull, value_possible, value_albums_additional

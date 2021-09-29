@@ -9,12 +9,7 @@ from sqlalchemy import (create_engine,
                         ForeignKey,
                         PrimaryKeyConstraint)
 from sqlalchemy.orm.session import Session
-from config import (db_file,
-                    db_host,
-                    db_name,
-                    db_pass,
-                    db_base,                    
-                    table_user,
+from config import (table_user,
                     table_song,
                     table_label,
                     table_album,
@@ -37,8 +32,8 @@ from config import (db_file,
                     table_user_history_album,
                     table_user_favourite_song,
                     table_user_favourite_album,
-                    folder_storage,
-                    folder_current)
+                    FolderProject,
+                    DataBaseCredentials)
 
 
 Base = declarative_base()
@@ -285,12 +280,13 @@ class SessionCreator:
     class which is dedicated to operate with our database
     """
     def __init__(self) -> None:
-        self.db_host = db_host
-        self.db_name = db_name
-        self.db_pass = db_pass
-        self.db_base = db_base
+        self.db_host = DataBaseCredentials.db_host
+        self.db_name = DataBaseCredentials.db_name
+        self.db_pass = DataBaseCredentials.db_pass
+        self.db_base = DataBaseCredentials.db_base
         self.get_folder = lambda x: os.path.exists(x) or os.mkdir(x)
-        self.folder_storage = os.path.join(folder_current, folder_storage)
+        self.folder_storage = os.path.join(FolderProject.folder_current, 
+                                            FolderProject.folder_storage)
         self.engine = self.return_engine()
         print(self.engine)
         self.session = self.return_session()
@@ -327,7 +323,7 @@ class SessionCreator:
         Output: we created engine files
         """
         self.get_folder(self.folder_storage)
-        self.sql_file = os.path.join(self.folder_storage, db_file)
+        self.sql_file = os.path.join(self.folder_storage, DataBaseCredentials.db_file)
         return create_engine(f"sqlite:///{self.sql_file}")
         
     def return_session(self) -> object:

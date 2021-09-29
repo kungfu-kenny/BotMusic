@@ -10,22 +10,7 @@ from parsers.parser_deezer import ParserDeezer
 from parsers.parser_apple_music import ParserAppleMusic
 from parsers.parser_yandex_music import ParserYandexMusic
 from parsers.parser_google_searches import ParserGoogleSearch
-from config import (csv_year,
-                    csv_basic,
-                    csv_genre,
-                    csv_edges,
-                    csv_albums,
-                    csv_artist,
-                    csv_subgenre,
-                    csv_basic_song,
-                    csv_basic_genre,
-                    csv_basic_song_fail,
-                    csv_basic_song_apple,
-                    csv_basic_song_deezer,
-                    csv_basic_song_genius,
-                    csv_basic_album_deezer_failed,
-                    csv_basic_album_deezer_success,
-                    csv_basic_album_deezer_possible,
+from config import (CSVNames,
                     folder_current,
                     folder_storage,
                     folder_defaults)
@@ -72,7 +57,8 @@ class ParserDefaultCSV:
         Output: boolean values which signify to continue
         """
         value_check = [os.path.join(self.folder_defaults, x) for x in [
-                        csv_year, csv_genre, csv_edges, csv_albums, csv_artist, csv_subgenre]]
+                        CSVNames.csv_year, CSVNames.csv_genre, CSVNames.csv_edges, 
+                        CSVNames.csv_albums, CSVNames.csv_artist, CSVNames.csv_subgenre]]
         return all([os.path.exists(x) and os.path.isfile(x) for x in value_check])
 
     def check_presence_work_previous(self) -> bool:
@@ -81,7 +67,8 @@ class ParserDefaultCSV:
         Input:  Input values in folder
         Output: boolean values which 
         """
-        value_check = [os.path.join(self.folder_defaults, x) for x in [csv_basic, csv_basic_genre]]
+        value_check = [os.path.join(self.folder_defaults, x) for x in [CSVNames.csv_basic, 
+                                                                        CSVNames.csv_basic_genre]]
         return all([os.path.exists(x) and os.path.isfile(x) for x in value_check])
 
     @staticmethod
@@ -175,13 +162,13 @@ class ParserDefaultCSV:
             return
         if self.check_presence_work_previous():
             #TODO add here print or log
-            return pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
-        df_albums = pd.read_csv(os.path.join(self.folder_defaults, csv_albums))
-        df_genre = pd.read_csv(os.path.join(self.folder_defaults, csv_genre))
-        df_artist = pd.read_csv(os.path.join(self.folder_defaults, csv_artist))
-        df_subgenre = pd.read_csv(os.path.join(self.folder_defaults, csv_subgenre))
-        df_year = pd.read_csv(os.path.join(self.folder_defaults, csv_year))
-        df_edges = pd.read_csv(os.path.join(self.folder_defaults, csv_edges))
+            return pd.read_csv(os.path.join(self.folder_defaults, CSVNames.csv_basic))
+        df_albums = pd.read_csv(os.path.join(self.folder_defaults, CSVNames.csv_albums))
+        df_genre = pd.read_csv(os.path.join(self.folder_defaults, CSVNames.csv_genre))
+        df_artist = pd.read_csv(os.path.join(self.folder_defaults, CSVNames.csv_artist))
+        df_subgenre = pd.read_csv(os.path.join(self.folder_defaults, CSVNames.csv_subgenre))
+        df_year = pd.read_csv(os.path.join(self.folder_defaults, CSVNames.csv_year))
+        df_edges = pd.read_csv(os.path.join(self.folder_defaults, CSVNames.csv_edges))
         df_genre_id = self.produce_basic_genres(df_genre, df_subgenre)
         
         values_id = df_edges['~from'].unique()
@@ -223,7 +210,8 @@ class ParserDefaultCSV:
         
         df_calculated, df_genre_id = self.produce_manual_changes(df_calculated, df_genre_id)
 
-        for df_value, value_name in zip([df_calculated, df_genre_id], [csv_basic, csv_basic_genre]):
+        for df_value, value_name in zip([df_calculated, df_genre_id], [CSVNames.csv_basic, 
+                                                                        CSVNames.csv_basic_genre]):
             self.produce_basic_csv_save(df_value, os.path.join(self.folder_defaults, value_name))
         return df_calculated
 
@@ -264,13 +252,13 @@ class ParserDefaultCSV:
         """
         keep = 'last' if value_submerge else 'first'
         if not value_bool:
-            csv_taken = csv_basic_song
+            csv_taken = CSVNames.csv_basic_song
             columns = self.columns_songs
             subset = ['Album_ID', 'Album_Length', 'Album_Link', 'Album_Name', 
                     'Artist_Name', 'Date', 'Label','Song_Links_Youtube', 
                     'Songs_Links', 'Songs_Number', 'Songs_Tracklist']
         else:
-            csv_taken = csv_basic_song_fail
+            csv_taken = CSVNames.csv_basic_song_fail
             columns = ['Album_ID', 'Album_Name_df', 'Artist_Name_df', 'Year_df', 'Album_Link_Previous']
             subset = columns
         df_path = os.path.join(self.folder_defaults, csv_taken)
@@ -293,16 +281,16 @@ class ParserDefaultCSV:
         """
         if value_type == 'songs':
             columns = self.columns_deezer_songs
-            csv_name = csv_basic_song_deezer
+            csv_name = CSVNames.csv_basic_song_deezer
         elif value_type == 'successful':
             columns = self.columns_deezer_successful
-            csv_name = csv_basic_album_deezer_success
+            csv_name = CSVNames.csv_basic_album_deezer_success
         elif value_type == 'possible':
             columns = self.columns_deezer_successful
-            csv_name = csv_basic_album_deezer_possible
+            csv_name = CSVNames.csv_basic_album_deezer_possible
         elif value_type == 'failed':
             columns = self.columns_deezer_failed
-            csv_name = csv_basic_album_deezer_failed
+            csv_name = CSVNames.csv_basic_album_deezer_failed
         value_path = os.path.join(folder_current, folder_storage, value_name)
         if not value_list and not os.path.exists(value_path) and not os.path.isfile(value_path):
             return
@@ -478,7 +466,7 @@ class ParserDefaultCSV:
                                         value_album_engineer, value_album_link_song, value_album_written, 
                                         value_album_produced, value_album_recorded, value_album_released)), 
                                         columns=self.columns_songs_genius)
-                self.produce_merge_dataframe(value_df, self.columns_songs_genius, csv_basic_song_genius)
+                self.produce_merge_dataframe(value_df, self.columns_songs_genius, CSVNames.csv_basic_song_genius)
 
     def produce_song_remake_values_old(self, value_song_dict:dict={}, value_check:bool=False) -> list:
         """
@@ -565,7 +553,7 @@ class ParserDefaultCSV:
         Input:  csv_name = name which is required to be checked of the values
         Output: value list of the lists to get values
         """
-        df_calculated = pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
+        df_calculated = pd.read_csv(os.path.join(self.folder_defaults, CSVNames.csv_basic))
         values_id, values_album, values_artist, values_year = list(zip(
             *df_calculated.drop_duplicates(subset=['Album_ID'], 
             keep='first')[['Album_ID', 'Album_Name', 'Artist', 'Year']].values[:40]))
@@ -592,7 +580,7 @@ class ParserDefaultCSV:
         parser_genius = ParserGenius()
         if df_calculated.empty:
             df_calculated = self.produce_basic_value()
-        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(csv_basic_song_genius)
+        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(CSVNames.csv_basic_song_genius)
         
         for value_id, value_album, value_artist, value_year in zip(values_id[:1], values_album[:1], values_artist[:1], values_year[:1]):
             start = time.time()
@@ -663,7 +651,7 @@ class ParserDefaultCSV:
         parser_deezer = ParserDeezer()
         if df_calculated.empty:
             df_calculated = self.produce_basic_value()
-        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(csv_basic_song_deezer)
+        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(CSVNames.csv_basic_song_deezer)
         for value_id, value_album, value_artist, value_year in zip(values_id[:2], values_album[:2], values_artist[:2], values_year[:2]):
             start = time.time()
             loop = asyncio.get_event_loop()
@@ -700,7 +688,7 @@ class ParserDefaultCSV:
         parser_google_search = ParserGoogleSearch()
         if df_calculated.empty:
             df_calculated = self.produce_basic_value()
-        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(csv_basic_song_deezer)
+        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(CSVNames.csv_basic_song_deezer)
         parser_google_search.produce_manually_search_albums_google()
 
     def produce_basic_yandex_search(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
@@ -712,10 +700,21 @@ class ParserDefaultCSV:
         parser_yandex_music = ParserYandexMusic()
         if df_calculated.empty:
             df_calculated = self.produce_basic_value()
-        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(csv_basic_song_deezer)
+        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(CSVNames.csv_basic_song_deezer)
         for value_id, value_album, value_artist, value_year in zip(values_id, values_album, values_artist, values_year):
+            start = time.time()
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(parser_yandex_music.produce_manual_albums_search_yandex(value_album, value_artist, value_year))
+            value_success_album, value_success, value_matched, value_possible, value_success_songs = \
+                loop.run_until_complete(parser_yandex_music.produce_manual_albums_search_yandex(value_album, value_artist, value_year))
+            for value_save, value_name in zip(
+                    [value_success, value_success_album, 
+                    value_matched, value_possible, value_success_songs], 
+                    ['yandex_successfull.json', 'yandex_album.json',
+                    'yandex_matched.json', 'yandex_possible.json','yandex_songs.json']):
+                self.get_values_json(value_save, value_name)
+            #TODO add here the transformation of the yandex music to the returnal of the values 
+            print(f'It took time: {time.time() - start}')
+            print('#############################################################################')
 
     def produce_whole_basic_searches(self) -> None:
         """
@@ -748,7 +747,7 @@ class ParserDefaultCSV:
         """
         self.produce_basic_value()
         list_insertion = []
-        df_basic = pd.read_csv(os.path.join(self.folder_defaults, csv_basic))
+        df_basic = pd.read_csv(os.path.join(self.folder_defaults, CSVNames.csv_basic))
         df_album_id = df_basic['Album_ID'].values
         df_album_name = df_basic['Album'].values
         df_artist_id = df_basic['Artist_ID'].values

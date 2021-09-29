@@ -4,7 +4,6 @@ import asyncio
 import requests
 from pprint import pprint
 from bs4 import BeautifulSoup
-from requests.api import head
 
 
 class ParserGoogleSearch:

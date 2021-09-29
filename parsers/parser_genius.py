@@ -4,11 +4,7 @@ import asyncio
 import requests
 from pprint import pprint
 from bs4 import BeautifulSoup
-from config import (link_genius,
-                    link_genius_albums,
-                    link_genius_search_begin,
-                    link_genius_search_end,
-                    genius_semaphore_threads)
+from config import LinkGenius
 
 
 class ParserGenius:
@@ -16,7 +12,8 @@ class ParserGenius:
     class which is dedicated to produce basic parsings of the info about songs
     """
     def __init__(self) -> None:
-        self.link_genius_albums = '/'.join([link_genius, link_genius_albums])
+        self.link_genius_albums = '/'.join([LinkGenius.link_genius, 
+                                            LinkGenius.link_genius_albums])
 
     @staticmethod
     def combine_link_values(value_link:str, value_artist:str, value_album:str) -> str:
@@ -73,7 +70,8 @@ class ParserGenius:
         """
         list_links = []
         for artist, album in zip(list_artists, list_albums):
-            list_links.append(asyncio.create_task(self.get_link_album(album, artist)))
+            list_links.append(
+                    asyncio.create_task(self.get_link_album(album, artist)))
         return await asyncio.gather(*list_links)
 
     async def parse_genius_manually_album_link(self, value_html:str, value_link:str, value_bool:bool) -> dict:
@@ -95,11 +93,13 @@ class ParserGenius:
         for subcolumn in ['Written By', 'Engineer', 'Produced by', 'Recorded At', 'Release Date']:
             if subcolumn in soup_label:
                 label_index = soup_label.index(subcolumn)
-                soup_label_value = [f.text.strip() for f in soup.find_all("span", {"class":"metadata_unit-info"})][label_index]
+                soup_label_value = [f.text.strip() for f in 
+                                    soup.find_all("span", {"class":"metadata_unit-info"})][label_index]
                 value_dict[subcolumn] = soup_label_value
         if value_bool and len(list(value_dict.keys())) == 1:
             try:
-                return await self.parse_genius_manually_album_link(self.parse_links_iframe(value_link), value_link, value_bool) 
+                return await self.parse_genius_manually_album_link(
+                            self.parse_links_iframe(value_link), value_link, value_bool) 
             except Exception as e:
                 print(e)
                 print('######################################################')
@@ -121,7 +121,8 @@ class ParserGenius:
         soup_name_artist = soup.find("h2").text.strip()
         soup_release = soup.find("div", {"class":"header_with_cover_art-primary_info_container"})
         soup_release = soup_release.find("div", {"class":"metadata_unit"}).text
-        song_number = [f.text.strip() for f in soup.find_all("span", {"class": "chart_row-number_container-number"})]
+        song_number = [f.text.strip() for f in 
+                        soup.find_all("span", {"class": "chart_row-number_container-number"})]
         song_number = [int(f) for f in song_number if f]
         song_len = song_number[-1]
         soup_songs_check = soup.find_all("h3")
@@ -133,7 +134,8 @@ class ParserGenius:
         for subcolumn in ['Label', 'Producer']:
             if subcolumn in soup_label:
                 label_index = soup_label.index(subcolumn)
-                soup_label_value = [f.text.strip() for f in soup.find_all("span", {"class":"metadata_unit-info"})][label_index]
+                soup_label_value = [f.text.strip() for f in 
+                    soup.find_all("span", {"class":"metadata_unit-info"})][label_index]
                 value_dict[subcolumn] = soup_label_value
         value_dict['Album_Name'] = soup_name_album
         value_dict['Artist_Name'] = soup_name_artist
@@ -186,7 +188,9 @@ class ParserGenius:
         Input:  value_search = value which is searched by us
         Output: we created link values for further parsing
         """
-        return ''.join([link_genius, link_genius_search_begin, value_search, link_genius_search_end])
+        return ''.join([LinkGenius.link_genius, 
+                        LinkGenius.link_genius_search_begin, 
+                        value_search, LinkGenius.link_genius_search_end])
 
     @staticmethod
     async def produce_genius_above(value_link:str) -> str:
@@ -195,9 +199,9 @@ class ParserGenius:
         Input:  value_link = link which was from the search
         Output: string values which is dedicated 
         """
-        return await value_link.split(link_genius)[0] \
-                                .split(link_genius_search_begin)[0] \
-                                .split(link_genius_search_end)[0]
+        return await value_link.split(LinkGenius.link_genius)[0] \
+                                .split(LinkGenius.link_genius_search_begin)[0] \
+                                .split(LinkGenius.link_genius_search_end)[0]
 
     async def parse_genius_manually_link(self, session:object, value_name_album:str, value_check=False) -> str:
         """
@@ -267,8 +271,9 @@ class ParserGenius:
                 value_bool = value which is dedicated to return values 
         Output: list values to work with further parsing
         """
-        tasks = [asyncio.create_task(self.parse_genius_manually_link(session, value_album_link, value_bool))
-                                                                    for value_album_link in value_album_list]
+        tasks = [asyncio.create_task(
+                    self.parse_genius_manually_link(session, value_album_link, value_bool))
+                    for value_album_link in value_album_list]
         results = await asyncio.gather(*tasks)
         return results
 
@@ -279,7 +284,7 @@ class ParserGenius:
         Output: list with parsed html values
         """
         links = [self.produce_genius_manually_link(f) for f in value_album_list]
-        semaphore = asyncio.Semaphore(genius_semaphore_threads)
+        semaphore = asyncio.Semaphore(LinkGenius.genius_semaphore_threads)
         async with semaphore:
             async with aiohttp.ClientSession(trust_env=True) as session:
                 value_return = await self.make_html_links(session, links)
@@ -292,18 +297,22 @@ class ParserGenius:
         Output: we succesfully created values of the 
         """
         value_album = {}
-        semaphore = asyncio.Semaphore(genius_semaphore_threads)
+        semaphore = asyncio.Semaphore(LinkGenius.genius_semaphore_threads)
         async with semaphore:
             async with aiohttp.ClientSession(trust_env=True) as session:
                 value_return = await self.make_html_links(session, value_album_links, True)
-            tasks = [asyncio.create_task(self.parse_genius_song_length(f, link)) for f, link in zip(value_return, value_album_links)]
+            tasks = [asyncio.create_task(
+                        self.parse_genius_song_length(f, link)) 
+                        for f, link in zip(value_return, value_album_links)]
             list_lengthes = await asyncio.gather(*tasks)
                 
             list_link_song_youtube = [f[0] for f in list_lengthes]
             list_link_apple_music = [f[1] for f in list_lengthes]
             async with aiohttp.ClientSession(trust_env=True) as session:
                 value_return_length = await self.make_html_links(session, list_link_apple_music, True)
-            tasks = [asyncio.create_task(self.parse_apple_music_song_length(html, link)) for html, link in zip(value_return_length, list_link_apple_music)]
+            tasks = [asyncio.create_task(
+                        self.parse_apple_music_song_length(html, link)) 
+                        for html, link in zip(value_return_length, list_link_apple_music)]
             list_apple_music_values = await asyncio.gather(*tasks)
             value_album.update({'Song': value_album_links})
             value_album.update({'Song_Links_Youtube': list_link_song_youtube})
@@ -319,11 +328,13 @@ class ParserGenius:
         Output: list of the new values but only with a values 
         """
         links = await self.produce_links_parse_albums(value_artist_list, value_album_list)
-        semaphore = asyncio.Semaphore(genius_semaphore_threads)
+        semaphore = asyncio.Semaphore(LinkGenius.genius_semaphore_threads)
         async with semaphore:
             async with aiohttp.ClientSession(trust_env=True) as session:
                 value_return = await self.make_html_links(session, links, True)
-        tasks = [asyncio.create_task(self.parse_genius_automatic_album_link(value_html, link)) for value_html, link in zip(value_return, links)]
+        tasks = [asyncio.create_task(
+                    self.parse_genius_automatic_album_link(value_html, link)) 
+                    for value_html, link in zip(value_return, links)]
         results = await asyncio.gather(*tasks)
         
         async with semaphore:
@@ -332,7 +343,9 @@ class ParserGenius:
                 async with aiohttp.ClientSession(trust_env=True) as session:
                     value_return = await self.make_html_links(session, links, True)
 
-                tasks = [asyncio.create_task(self.parse_genius_manually_album_link(value_html, link, value_repeat)) for value_html, link in zip(value_return, links)]
+                tasks = [asyncio.create_task(
+                            self.parse_genius_manually_album_link(value_html, link, value_repeat)) 
+                            for value_html, link in zip(value_return, links)]
                 value_album.update({"Songs_Values": await asyncio.gather(*tasks)})
         return results
 
@@ -343,27 +356,32 @@ class ParserGenius:
         Output: we successfully created values from the parsing
         """
         links = await self.produce_links_parse_albums(value_artist_list, value_album_list)
-        semaphore = asyncio.Semaphore(genius_semaphore_threads)
+        semaphore = asyncio.Semaphore(LinkGenius.genius_semaphore_threads)
         async with semaphore:
             async with aiohttp.ClientSession(trust_env=True) as session:
                 value_return = await self.make_html_links(session, links, True)
-        tasks = [asyncio.create_task(self.parse_genius_automatic_album_link(value_html, link)) for value_html, link in zip(value_return, links)]
+        tasks = [asyncio.create_task(
+                    self.parse_genius_automatic_album_link(value_html, link)) 
+                    for value_html, link in zip(value_return, links)]
         results = await asyncio.gather(*tasks)
         async with semaphore:
             for value_album in results:
                 links = value_album.get('Songs_Links', [])
                 async with aiohttp.ClientSession(trust_env=True) as session:
                     value_return = await self.make_html_links(session, links, True)
-                tasks = [asyncio.create_task(self.parse_genius_song_length(f, link)) for f, link in zip(value_return, links)]
+                tasks = [asyncio.create_task(
+                            self.parse_genius_song_length(f, link)) 
+                            for f, link in zip(value_return, links)]
                 list_lengthes = await asyncio.gather(*tasks)
                 
                 list_link_song_youtube = [f[0] for f in list_lengthes]
                 list_link_apple_music = [f[1] for f in list_lengthes]
                 async with aiohttp.ClientSession(trust_env=True) as session:
                     value_return_length = await self.make_html_links(session, list_link_apple_music, True)
-                tasks = [asyncio.create_task(self.parse_apple_music_song_length(html, link)) for html, link in zip(value_return_length, list_link_apple_music)]
+                tasks = [asyncio.create_task(
+                            self.parse_apple_music_song_length(html, link)) 
+                            for html, link in zip(value_return_length, list_link_apple_music)]
                 list_apple_music_values = await asyncio.gather(*tasks)
                 value_album.update({'Song_Links_Youtube': list_link_song_youtube})
                 value_album.update({'Song_Parameters': list_apple_music_values})
         return results
-                

@@ -2,11 +2,8 @@ import aiohttp
 import asyncio
 from pprint import pprint
 from bs4 import BeautifulSoup
-from config import (link_apple_music,
-                    link_apple_music_us,
-                    link_apple_music_space,
-                    link_apple_music_search,
-                    apple_music_semaphore_threads)
+from config import LinkAppleMusic
+
 
 class ParserAppleMusic:
     """
@@ -14,7 +11,9 @@ class ParserAppleMusic:
     and get parameters from the values
     """
     def __init__(self) -> None:
-        self.link_search_begin = '/'.join([link_apple_music, link_apple_music_us, link_apple_music_search])
+        self.link_search_begin = '/'.join([LinkAppleMusic.link_apple_music, 
+                                        LinkAppleMusic.link_apple_music_us, 
+                                        LinkAppleMusic.link_apple_music_search])
         
     def get_link_values_album_search(self, value_artist:str, value_album:str) -> set:
         """
@@ -25,7 +24,7 @@ class ParserAppleMusic:
         """
         translated_album = self.get_value_translate(value_album)
         translated_artist = self.get_value_translate(value_artist)
-        value_search = link_apple_music_space.join([translated_artist, translated_album])
+        value_search = LinkAppleMusic.link_apple_music_space.join([translated_artist, translated_album])
         return f"{self.link_search_begin}{value_search}", value_artist, value_album
 
     @staticmethod
@@ -39,8 +38,8 @@ class ParserAppleMusic:
         value_str = value_str.lower()
         for case in ['$']:
             if case in value_str:
-                value_str = value_str.replace(case, link_apple_music_space)
-        return value_str.replace(' ', link_apple_music_space)
+                value_str = value_str.replace(case, LinkAppleMusic.link_apple_music_space)
+        return value_str.replace(' ', LinkAppleMusic.link_apple_music_space)
 
     async def get_html_value_analysis_album(self, value_html:str, value_link:str) -> str:
         """
@@ -94,7 +93,7 @@ class ParserAppleMusic:
         Output: dictionary with fully parsed values for the further search
         """
         links = [self.get_link_values_album_search(album, artist) for album, artist in zip(value_albums, value_artists)]
-        semaphore = asyncio.Semaphore(apple_music_semaphore_threads)
+        semaphore = asyncio.Semaphore(LinkAppleMusic.apple_music_semaphore_threads)
         async with semaphore:
             async with aiohttp.ClientSession(trust_env=True) as session:
                 value_return = await self.make_html_links(session, links)

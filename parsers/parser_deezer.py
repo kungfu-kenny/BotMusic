@@ -4,17 +4,7 @@ import aiohttp
 import asyncio
 from pprint import pprint
 from bs4 import BeautifulSoup
-from config import (link_deezer, 
-                    link_deezer_a,
-                    link_deezer_us,
-                    link_deezer_box,
-                    link_deezer_album,
-                    link_deezer_space,
-                    link_deezer_dollar,
-                    link_deezer_search,
-                    link_deezer_comsep,
-                    link_deezer_doublecom,
-                    deezer_semaphore_threads)
+from config import LinkDeezer
 
 
 class ParserDeezer:
@@ -22,7 +12,7 @@ class ParserDeezer:
     class which is dedicated to return values from the Deezer website information about the music
     """
     def __init__(self):
-        self.link_search_begin = '/'.join([link_deezer, link_deezer_search])
+        self.link_search_begin = '/'.join([LinkDeezer.link_deezer, LinkDeezer.link_deezer_search])
 
     async def get_link_values_album_search(self, value_artist:str, value_album:str) -> set:
         """
@@ -34,8 +24,8 @@ class ParserDeezer:
         translated_album = await self.get_value_translate(value_album)
         translated_artist = await self.get_value_translate(value_artist)
         value_search = ' '.join([translated_album, translated_artist])
-        value_link = "/".join([self.link_search_begin, value_search, link_deezer_album]).strip()
-        return value_link.replace(' ', link_deezer_space), value_artist, value_album
+        value_link = "/".join([self.link_search_begin, value_search, LinkDeezer.link_deezer_album]).strip()
+        return value_link.replace(' ', LinkDeezer.link_deezer_space), value_artist, value_album
 
     @staticmethod
     async def get_value_translate(value_insert:str) -> str:
@@ -44,8 +34,9 @@ class ParserDeezer:
         Input:  value_insert = inserted values for the change
         Output: inserted values with minor change of the string
         """
-        for value_replace, value_new in [('$', link_deezer_dollar), ('@', link_deezer_a), ('#', link_deezer_box)
-                                        (';', link_deezer_comsep), (':', link_deezer_doublecom)]:
+        for value_replace, value_new in [('$', LinkDeezer.link_deezer_dollar), ('@', LinkDeezer.link_deezer_a), 
+                                        ('#', LinkDeezer.link_deezer_box), (';', LinkDeezer.link_deezer_comsep), 
+                                        (':', LinkDeezer.link_deezer_doublecom)]:
             value_insert = value_insert.replace(value_replace, value_new)
         return value_insert
 
@@ -125,8 +116,8 @@ class ParserDeezer:
             value_list = value_list.get('data', [])
             [i.update({"Album Searched": album, "Artist Searched": artist, 
                     "Year Searched":year, "Link Searched": link}) for i in value_list]
-            [i.update({"Link Album": '/'.join([link_deezer, link_deezer_us, 
-                    link_deezer_album, i.get("ALB_ID", '')])}) for i in value_list]
+            [i.update({"Link Album": '/'.join([LinkDeezer.link_deezer, LinkDeezer.link_deezer_us, 
+                    LinkDeezer.link_deezer_album, i.get("ALB_ID", '')])}) for i in value_list]
             
             [i.update({'Checked Album': i.get('Album Searched', '').lower() in self.get_additional_albums(i['ALB_TITLE'])}) for i in value_list]
             [i.update({'Checked Artist': i.get('Artist Searched', '') == i.get('ART_NAME', '')}) for i in value_list]
@@ -240,8 +231,7 @@ class ParserDeezer:
         list_non_found = []
         links = await self.get_links_values_albums(value_artists, value_albums)
         
-        #TODO think about adding remaster values of the album concrete here
-        semaphore = asyncio.Semaphore(deezer_semaphore_threads)
+        semaphore = asyncio.Semaphore(LinkDeezer.deezer_semaphore_threads)
         async with semaphore:
             async with aiohttp.ClientSession(trust_env=True) as session:
                 value_return = await self.make_html_links(session, links)
