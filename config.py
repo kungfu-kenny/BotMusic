@@ -3,6 +3,9 @@ from attr import dataclass
 from dotenv import load_dotenv
 
 load_dotenv()
+###########################BLOCK WEBDRIVER#################################
+
+link_webdriver = os.getenv("LINK_WEBDRIVER")
 ######################BLOCK TELEGRAM BASIC#################################
 
 bot_key = os.getenv('BOT_KEY')
@@ -46,6 +49,8 @@ class CSVNames:
     csv_basic_song_apple = "Basic_Song_Apple.csv"
     csv_basic_song_deezer = "Basic_Song_Deezer.csv"
     csv_basic_song_genius = "Basic_Song_Genius.csv"
+    csv_basic_song_yandex = "Basic_Song_Yandex.csv"
+    csv_advanced_song_yandex = "Advanced_Song_Yandex.csv"
     csv_basic_album_deezer_failed = "Basic_Album_Deezer_Failed.csv"
     csv_basic_album_deezer_possible = "Basic_Album_Deezer_Possible.csv"
     csv_basic_album_deezer_success = "Basic_Album_Deezer_Successful.csv"    

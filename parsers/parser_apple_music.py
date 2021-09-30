@@ -1,7 +1,10 @@
-import aiohttp
+# import aiohttp
 import asyncio
 from pprint import pprint
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from fake_useragent import UserAgent
+from parsers.parse_webdriver import ParseWebDriver
 from config import LinkAppleMusic
 
 
@@ -11,10 +14,18 @@ class ParserAppleMusic:
     and get parameters from the values
     """
     def __init__(self) -> None:
+        self.chromedriver = ParseWebDriver().produce_webdriver_values()
         self.link_search_begin = '/'.join([LinkAppleMusic.link_apple_music, 
                                         LinkAppleMusic.link_apple_music_us, 
                                         LinkAppleMusic.link_apple_music_search])
-        
+    
+    def work_options(self) -> None:
+        """
+        Method which is dedicated to produce the values of the webdriver
+        """
+        self.options = webdriver.ChromeOptions()
+        self.options.add_argument(f"user-agent={UserAgent().random}")
+
     def get_link_values_album_search(self, value_artist:str, value_album:str) -> set:
         """
         Method which is dedicated to get links of searching
@@ -58,7 +69,7 @@ class ParserAppleMusic:
         return 'che'
 
 
-    async def parse_apple_manually_link(self, session:object, value_name_album:str) -> str:
+    async def parse_apple_manually_link(self, value_name_album:str) -> str:
         """
         Method which is dedicated to produce manuall search of the albums in caes that we are looking by album
         Input:  session = session object for the search
@@ -66,22 +77,21 @@ class ParserAppleMusic:
                 value_check = value 
         Output: we successfully parsed all names which were used on the genius
         """
-        if value_name_album == 'Undefined':
-            return value_name_album
-        async with session.get(value_name_album) as r:
-            if r.status == 200:
-                return await r.text()
+        # if value_name_album == 'Undefined':
+        #     return value_name_album
+        # async with session.get(value_name_album) as r:
+        #     if r.status == 200:
+        #         return await r.text()
         return value_name_album
 
-    async def make_html_links(self, session:object, value_links:str) -> list:
+    async def make_html_links(self, value_links:str) -> list:
         """
         Async method which is dedicated to asyncronously return 
-        Input:  session = session object of the values
-                value_links = list with the links values of the values
+        Input:  value_links = list with the links values of the values
         Output: list with the html values
         """
-        tasks = [asyncio.create_task(self.parse_apple_manually_link(session, value_link))
-                                                                    for value_link, *_ in value_links]
+        tasks = [asyncio.create_task(self.parse_apple_manually_link(value_link))
+                                        for value_link, *_ in value_links]
         return await asyncio.gather(*tasks)
         
     async def get_produce_apple_music_search(self, value_artists:list, value_albums:list, value_year:list) -> dict:
@@ -92,13 +102,16 @@ class ParserAppleMusic:
                 value_year = list of the years of the seleted values
         Output: dictionary with fully parsed values for the further search
         """
+        self.work_options()
+        self.driver = webdriver.Chrome(self.chromedriver, options=self.options)
         links = [self.get_link_values_album_search(album, artist) for album, artist in zip(value_albums, value_artists)]
+        print(links)
+        print('###########################################################')
         semaphore = asyncio.Semaphore(LinkAppleMusic.apple_music_semaphore_threads)
         async with semaphore:
-            async with aiohttp.ClientSession(trust_env=True) as session:
-                value_return = await self.make_html_links(session, links)
-        tasks = [asyncio.create_task(self.get_html_value_analysis_album(value_html, link)) for value_html, link in zip(value_return[:1], links[:1])]
-        results = await asyncio.gather(*tasks)
+            value_return = await self.make_html_links(links)
+        # tasks = [asyncio.create_task(self.get_html_value_analysis_album(value_html, link)) for value_html, link in zip(value_return[:1], links[:1])]
+        # results = await asyncio.gather(*tasks)
         
         #TODO think about next scripts !
         # k = requests.get("https://www.deezer.com/search/beatles%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band/album").text
@@ -118,4 +131,6 @@ class ParserAppleMusic:
         #TODO write the values of getting values
         #TODO get the link and the parse all values from the link
         #TODO get dictionary values 
-        pass
+        self.driver.close()
+        self.driver.quit()
+        return [], [], [], []

@@ -232,6 +232,7 @@ class ParserYandexMusic:
         soup_lyrics = soup.get('lyric', {})
         soup_song_album = soup.get('track', {}).get('albums', [])
         soup_song_artist = soup.get('track', {}).get('artists', [])
+        soup_song_similar = soup.get('similarTracks', []) 
         
         value_dict['Song Lyrics'] = soup_lyrics[0].get('fullLyrics', '') if soup_lyrics else ''
         value_dict['Song Lyrics Language'] = soup_lyrics[0].get('textLanguage', 'unknown') if soup_lyrics else 'unknown'
@@ -239,6 +240,9 @@ class ParserYandexMusic:
         value_dict['Song Contents'] = [f.get('contentWarning', '') for f in soup_song_album]
         value_dict['Song Genres'] = [f.get('genre', '') for f in soup_song_album]
         value_dict['Song Years'] = [f.get('year', 0) for f in soup_song_album]
+        value_dict['Song Major ID'] = [f.get('major', {}).get('id', 0) for f in soup_song_album]
+        value_dict['Song Major Name'] = [f.get('major', {}).get('name', '') for f in soup_song_album]
+        value_dict['Song Duration Milliseconds'] = [f.get("durationMs", 0) for f in soup_song_album]
         value_dict['Song Versions'] = [f.get('version', '') for f in soup_song_album]
         value_dict['Song Positions'] = [f.get('trackPosition', {}).get('index', 0) for f in soup_song_album]
         value_dict['Song Titles'] = [f.get('title', '') for f in soup_song_album]
@@ -252,6 +256,29 @@ class ParserYandexMusic:
         value_dict['Artist Composer Booleans'] = [f.get('composer', False) for f in soup_song_artist]
         value_dict['Artist IDs'] = [f.get('id', 0) for f in soup_song_artist]
         value_dict['Artist Names'] = [f.get('name', '') for f in soup_song_artist]
+        value_dict['Song Similars']= [
+            {
+                'Song Similar to ID': value_dict.get('Song IDs', []),
+                'Song Similar ID': i.get('id', 0),
+                'Song Similar Real ID': i.get('realID', 0),
+                'Song Similar Title': i.get('title', ''),
+                'Song Similar Version': i.get('version', ''),
+                'Song Similar Major ID': i.get('major', {}).get('id', ''),
+                'Song Similar Major Name': i.get('major', {}).get('name', ''),
+                'Song Similar Artist IDs': [f.get('id', 0) for f in i.get("artists", [])],
+                'Song Similar Artist Names': [f.get('name', 0) for f in i.get("artists", [])],
+                'Song Similar Album IDs': [f.get('id', 0) for f in i.get("albums", [])],
+                'Song Similar Album Titles': [f.get('title', '') for f in i.get("albums", [])],
+                'Song Similar Album Years': [f.get('year', 0) for f in i.get("albums", [])],
+                'Song Similar Album Genres': [f.get('genre', '') for f in i.get("albums", [])],
+                'Song Similar Album Track Counts': [f.get("trackCount", 0) for f in i.get("albums", [])],
+                'Song Similar Album Track Positions': [f.get("trackPosition", {}).get("index", 0) 
+                                                                for f in i.get("albums", [])],
+                'Song Similar Album Label IDs': [[k.get('id', 0) for k in f.get('labels', [])] 
+                                                                for f in i.get("albums", [])],
+                'Song Similar Album Label Names': [[k.get('name', '') for k in f.get('labels', [])] 
+                                                                for f in i.get("albums", [])],
+            } for i in soup_song_similar]
         return value_dict
 
     async def produce_manual_albums_search_yandex(self, value_artists:list, value_albums:list, value_years:list, value_text:bool=False) -> set:

@@ -10,10 +10,7 @@ from parsers.parser_deezer import ParserDeezer
 from parsers.parser_apple_music import ParserAppleMusic
 from parsers.parser_yandex_music import ParserYandexMusic
 from parsers.parser_google_searches import ParserGoogleSearch
-from config import (CSVNames,
-                    folder_current,
-                    folder_storage,
-                    folder_defaults)
+from config import CSVNames, FolderProject
 
 
 class ParserDefaultCSV:
@@ -44,11 +41,12 @@ class ParserDefaultCSV:
         self.columns_deezer_failed = ["Album_ID", 'Album_Name_df', 'Artist_Name_df', 'Year_df', 'Link_Search_Failed_Deezer']
         self.deezer_options = ['songs', 'successful', 'possible', 'failed']
         self.json_deezer_names = ['deezer_songs.json', 'deezer_successfull.json', 'deezer_possible.json', 'deezer_failed.json']
-        self.folder_defaults = os.path.join(folder_current, folder_defaults)
+        self.folder_defaults = os.path.join(FolderProject.folder_current, FolderProject.folder_defaults)
         # self.produce_basic_values_genius()
         # self.produce_basic_values_deezer()
         # self.produce_basic_google_search()
-        self.produce_basic_yandex_search()
+        # self.produce_basic_yandex_search()
+        self.produce_basic_values_apple_music()
         
     def check_presence_files(self) -> bool:
         """
@@ -291,7 +289,8 @@ class ParserDefaultCSV:
         elif value_type == 'failed':
             columns = self.columns_deezer_failed
             csv_name = CSVNames.csv_basic_album_deezer_failed
-        value_path = os.path.join(folder_current, folder_storage, value_name)
+        value_path = os.path.join(FolderProject.folder_current, 
+                                    FolderProject.folder_storage, value_name)
         if not value_list and not os.path.exists(value_path) and not os.path.isfile(value_path):
             return
         elif not value_list and not value_check:
@@ -428,13 +427,16 @@ class ParserDefaultCSV:
         Output: list of values which would be comfortable 
         """
         # TODO think about another boolean variable
-        value_path = os.path.join(folder_current, folder_storage, 'check.json')
-        if not value_song_dict and not value_check and not os.path.exists(value_path) and not os.path.isfile(value_path):
+        value_path = os.path.join(FolderProject.folder_current, 
+                                    FolderProject.folder_storage, 'check.json')
+        if not value_song_dict and not value_check and not \
+                os.path.exists(value_path) and not os.path.isfile(value_path):
             return
         elif not value_song_dict and not value_check:
             with open(value_path, 'r') as value_file:
                 value_song_dict = json.load(value_file)
-            if value_path == os.path.join(folder_current, folder_storage, 'one.json'):
+            if value_path == os.path.join(FolderProject.folder_current, 
+                                        FolderProject.folder_storage, 'one.json'):
                 value_song_dict = [value_song_dict]
             else:
                 pass
@@ -475,13 +477,16 @@ class ParserDefaultCSV:
                 value_check = boolean values
         Output: we created value of the dataframe for the songs and successfully developed values after
         """
-        value_path = os.path.join(folder_current, folder_storage, 'check.json')
-        if not value_song_dict and not value_check and not os.path.exists(value_path) and not os.path.isfile(value_path):
+        value_path = os.path.join(FolderProject.folder_current, 
+                                    FolderProject.folder_storage, 'check.json')
+        if not value_song_dict and not value_check and not \
+                os.path.exists(value_path) and not os.path.isfile(value_path):
             return
         elif not value_song_dict and not value_check:
             with open(value_path, 'r') as value_file:
                 value_song_dict = json.load(value_file)
-            if value_path == os.path.join(folder_current, folder_storage, 'value_one.json'):
+            if value_path == os.path.join(FolderProject.folder_current, 
+                                            FolderProject.folder_storage, 'value_one.json'):
                 value_song_dict = value_song_dict
             else:
                 pass
@@ -642,6 +647,22 @@ class ParserDefaultCSV:
                 [i.update({"Album_ID": index}) for i in possible[value_index] if i]
         return songs, found, possible, failed               
 
+    def produce_basic_values_apple_music(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
+        """
+        Method which is dedicated to produce from the apple music
+        Input:  df_calculated = previously calculated values
+        Output: we developed dataframes for the basic operations
+        """
+        parser_apple = ParserAppleMusic()
+        if df_calculated.empty:
+            df_calculated = self.produce_basic_value()
+        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(CSVNames.csv_basic_song_apple)
+        for value_id, value_album, value_artist, value_year in zip(values_id[:1], values_album[:1], values_artist[:1], values_year[:1]):
+            start = time.time()
+            loop = asyncio.get_event_loop()
+            value_songs, value_found, value_possible, value_failed = \
+                    loop.run_until_complete(parser_apple.get_produce_apple_music_search(value_album, value_artist, value_year))
+
     def produce_basic_values_deezer(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
         """
         Method which is dedicated to produce values of the songs to the data insertion
@@ -691,6 +712,24 @@ class ParserDefaultCSV:
         values_id, values_album, values_artist, values_year = self.get_values_songs_usage(CSVNames.csv_basic_song_deezer)
         parser_google_search.produce_manually_search_albums_google()
 
+    def produce_changes_yandex_search(self, *args:set) -> set:
+        """
+        Method which is dedicated to produce the transformations of the selected values
+        Input:  args = set with selected values:
+                    value_id = value id of the searched values
+                    value_album = name of the album which was created
+                    value_artist = name of the artists which were developed
+                    value_year = year which time album was developed
+                    value_success_album = parsed successful albums info which were created
+                    value_success = all possible from the successful searches
+                    value_matched = all matched values from the successful searches
+                    value_possible = all possible from searches
+                    value_success_songs = parsed song values from the success album
+        Output: set of the transformed values
+        """
+        #TODO start work here; 
+        return args
+
     def produce_basic_yandex_search(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
         """
         Method which is dedicated to produce values of the returnal and getting values of the searcher
@@ -700,7 +739,7 @@ class ParserDefaultCSV:
         parser_yandex_music = ParserYandexMusic()
         if df_calculated.empty:
             df_calculated = self.produce_basic_value()
-        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(CSVNames.csv_basic_song_deezer)
+        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(CSVNames.csv_basic_song_yandex)
         for value_id, value_album, value_artist, value_year in zip(values_id, values_album, values_artist, values_year):
             start = time.time()
             loop = asyncio.get_event_loop()
@@ -713,6 +752,9 @@ class ParserDefaultCSV:
                     'yandex_matched.json', 'yandex_possible.json','yandex_songs.json']):
                 self.get_values_json(value_save, value_name)
             #TODO add here the transformation of the yandex music to the returnal of the values 
+            value_results = self.produce_changes_yandex_search(value_id, value_album, value_artist, 
+                                                            value_year, value_success_album, value_success, 
+                                                            value_matched, value_possible, value_success_songs)
             print(f'It took time: {time.time() - start}')
             print('#############################################################################')
 
@@ -731,7 +773,8 @@ class ParserDefaultCSV:
         Input:  value_dict = dictionary values of the taken of the it
         Output: we created test.json values for the inserting        
         """
-        value_folder = os.path.join(folder_current, folder_storage)
+        value_folder = os.path.join(FolderProject.folder_current, 
+                                    FolderProject.folder_storage)
         os.path.exists(value_folder) or os.mkdir(value_folder)
         value_path = os.path.join(value_folder, value_name)
         if os.path.exists(value_path) and os.path.isfile(value_path):
