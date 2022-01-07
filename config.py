@@ -127,3 +127,26 @@ class LinkYandex:
     link_yandex_space = '%20'
     link_yandex_dollar = '%24'
     link_yandex_doublecom = '%3A'
+
+@dataclass
+class ParserColumnsCSV:
+    columns = ['Album_ID', 'Album_Name', "Artist_ID", 'Artist', 'Genre', 'Year']
+    columns_songs = ['Album_ID', 'Album_Name_df', 'Artist_Name_df', 'Year_df', 'Album_Length', 
+                    'Album_Link', 'Album_Name', 'Artist_Name', 'Date', 'Label', 'Song_Links_Youtube', 
+                    'Songs_Links', 'Songs_Number', 'Songs_Tracklist','Apple_ID', 
+                    'Artwork_Url', 'Duration', 'Artist_Display_Name', 'Song_Genius_ID', 'Title']
+    columns_songs_genius = ['Album_ID', 'Album_Name_df', 'Artist_Name_df', 'Year_df', 'Album_Length',
+                            'Album_Link', 'Album_Name_Genius', 'Artist_Name_Genius', 'Album_Date_Genius',
+                            'Album_Label_Genius', 'Album_Song_Number', 'Album_Song_Name', 'Album_Song_Link']
+    columns_deezer_songs = ["Album_ID", "Album_Name_Deezer", "Artist_Name_Deezer", "Year_Deezer", 
+                        "Label_Deezer", "Album_Duration", "Song_Order", "Album_Number_Tracks", "Song_Name_Deezer", 
+                        "Song_Author_Deezer", "Song_Length", "Song_Popularity_Deezer", "Song_Link_Deezer"]
+    columns_deezer_successful = ['Album_ID', 'Album_ID_Deezer', 'Album_Name_df', 'Artist_Name_df', 'Year_df',
+                    'Album_Name_Deezer', 'Artist_Name_Deezer', 'Artist_ID_Deezer', 'Release_Date_Physical',
+                    'Release_Date_Original', 'Album_Picture_Deezer', 'Album_Available_Deezer', 
+                    'Album_Version_Deezer','Explicit_Lyrics_Deezer', 'Explicit_Cover_Deezer', 'Type_INT_Deezer', 
+                    'Artist_Dummy_Deezer', 'Album_Number_Track_Deezer', 'Type_Deezer', 'Link_Searched_Deezer', 
+                    'Link_Album_Deezer', 'Checked_Album_Deezer', 'Checked_Artist_Deezer']
+    columns_deezer_failed = ["Album_ID", 'Album_Name_df', 'Artist_Name_df', 'Year_df', 'Link_Search_Failed_Deezer']
+    deezer_options = ['songs', 'successful', 'possible', 'failed']
+    json_deezer_names = ['deezer_songs.json', 'deezer_successfull.json', 'deezer_possible.json', 'deezer_failed.json']

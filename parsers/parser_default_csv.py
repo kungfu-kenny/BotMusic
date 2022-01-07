@@ -10,7 +10,9 @@ from parsers.parser_deezer import ParserDeezer
 from parsers.parser_apple_music import ParserAppleMusic
 from parsers.parser_yandex_music import ParserYandexMusic
 from parsers.parser_google_searches import ParserGoogleSearch
-from config import CSVNames, FolderProject
+from config import (CSVNames, 
+                    FolderProject, 
+                    ParserColumnsCSV)
 
 
 class ParserDefaultCSV:
@@ -18,36 +20,42 @@ class ParserDefaultCSV:
     class which is dedicated to produce from the open source csv
     and to insert them into the database
     """
-    def __init__(self) -> None:
+    def __init__(self, **kwargs:dict) -> None:
         self.loop = asyncio.get_event_loop()
-        self.columns = ['Album_ID', 'Album_Name', "Artist_ID", 'Artist', 'Genre', 'Year']
-        self.columns_songs = ['Album_ID', 'Album_Name_df', 'Artist_Name_df', 'Year_df', 'Album_Length', 
-                        'Album_Link', 'Album_Name', 'Artist_Name', 'Date', 'Label', 'Song_Links_Youtube', 
-                        'Songs_Links', 'Songs_Number', 'Songs_Tracklist','Apple_ID', 
-                        'Artwork_Url', 'Duration', 'Artist_Display_Name', 'Song_Genius_ID', 'Title']
-        self.columns_songs_genius = ['Album_ID', 'Album_Name_df', 'Artist_Name_df', 'Year_df', 'Album_Length',
-                                'Album_Link', 'Album_Name_Genius', 'Artist_Name_Genius', 'Album_Date_Genius',
-                                'Album_Label_Genius', 'Songs_Lyrics', 'Song_Engineer', 'Song_Link', 'Song_Written',
-                                'Album_Producer', 'Song_Place_Recorded', 'Song_Release_Genius']
-        self.columns_deezer_songs = ["Album_ID", "Album_Name_Deezer", "Artist_Name_Deezer", "Year_Deezer", 
-                            "Label_Deezer", "Album_Duration", "Song_Order", "Album_Number_Tracks", "Song_Name_Deezer", 
-                            "Song_Author_Deezer", "Song_Length", "Song_Popularity_Deezer", "Song_Link_Deezer"]
-        self.columns_deezer_successful = ['Album_ID', 'Album_ID_Deezer', 'Album_Name_df', 'Artist_Name_df', 'Year_df',
-                        'Album_Name_Deezer', 'Artist_Name_Deezer', 'Artist_ID_Deezer', 'Release_Date_Physical',
-                        'Release_Date_Original', 'Album_Picture_Deezer', 'Album_Available_Deezer', 
-                        'Album_Version_Deezer','Explicit_Lyrics_Deezer', 'Explicit_Cover_Deezer', 'Type_INT_Deezer', 
-                        'Artist_Dummy_Deezer', 'Album_Number_Track_Deezer', 'Type_Deezer', 'Link_Searched_Deezer', 
-                        'Link_Album_Deezer', 'Checked_Album_Deezer', 'Checked_Artist_Deezer']
-        self.columns_deezer_failed = ["Album_ID", 'Album_Name_df', 'Artist_Name_df', 'Year_df', 'Link_Search_Failed_Deezer']
-        self.deezer_options = ['songs', 'successful', 'possible', 'failed']
-        self.json_deezer_names = ['deezer_songs.json', 'deezer_successfull.json', 'deezer_possible.json', 'deezer_failed.json']
-        self.folder_defaults = os.path.join(FolderProject.folder_current, FolderProject.folder_defaults)
-        # self.produce_basic_values_genius()
-        # self.produce_basic_values_deezer()
-        # self.produce_basic_google_search()
-        # self.produce_basic_yandex_search()
-        self.produce_basic_values_apple_music()
+        self.folder_defaults = os.path.join(
+            FolderProject.folder_current, 
+            FolderProject.folder_defaults)
+        self.produce_basic_csv_data_creation(kwargs)
         
+    def produce_basic_csv_data_creation(self, kwargs:dict) -> None:
+        """
+        Method which is dedicated to create values for the 
+        Input:  kwargs = dictionary with the keys:
+                all = boolean parameter to parse all
+                genius = boolean parameter to parse genius
+                deezer = boolean parameter to parse deezer
+                google = boolean parameter to parse google search
+                yandex = boolean parameter to parse yandex search
+                apple = boolean parameter to parse apple music
+        Output: we created values 
+        """
+        if kwargs.get('all'):
+            self.produce_basic_values_genius()
+            self.produce_basic_values_deezer()
+            self.produce_basic_google_search()
+            self.produce_basic_yandex_search()
+            self.produce_basic_values_apple_music()
+        elif kwargs.get('genius'):
+            self.produce_basic_values_genius()
+        elif kwargs.get('deezer'):
+            self.produce_basic_values_deezer()
+        elif kwargs.get('google'):
+            self.produce_basic_google_search()
+        elif kwargs.get('yandex'):
+            self.produce_basic_yandex_search()
+        elif kwargs.get('apple'):
+            self.produce_basic_values_apple_music()
+
     def check_presence_files(self) -> bool:
         """
         Method which is dedicated to check presence of necessary files for further work
@@ -204,7 +212,7 @@ class ParserDefaultCSV:
             return_artist_id.extend(df_res_artist_id)
         
         df_calculated = pd.DataFrame(list(zip(return_index, return_album, return_artist_id, 
-                        return_artist, return_genre, return_year)), columns=self.columns)
+                        return_artist, return_genre, return_year)), columns=ParserColumnsCSV.columns)
         
         df_calculated, df_genre_id = self.produce_manual_changes(df_calculated, df_genre_id)
 
@@ -251,7 +259,7 @@ class ParserDefaultCSV:
         keep = 'last' if value_submerge else 'first'
         if not value_bool:
             csv_taken = CSVNames.csv_basic_song
-            columns = self.columns_songs
+            columns = ParserColumnsCSV.columns_songs
             subset = ['Album_ID', 'Album_Length', 'Album_Link', 'Album_Name', 
                     'Artist_Name', 'Date', 'Label','Song_Links_Youtube', 
                     'Songs_Links', 'Songs_Number', 'Songs_Tracklist']
@@ -278,16 +286,16 @@ class ParserDefaultCSV:
         Output: list of the values which woulb be comfortable for use in the future
         """
         if value_type == 'songs':
-            columns = self.columns_deezer_songs
+            columns = ParserColumnsCSV.columns_deezer_songs
             csv_name = CSVNames.csv_basic_song_deezer
         elif value_type == 'successful':
-            columns = self.columns_deezer_successful
+            columns = ParserColumnsCSV.columns_deezer_successful
             csv_name = CSVNames.csv_basic_album_deezer_success
         elif value_type == 'possible':
-            columns = self.columns_deezer_successful
+            columns = ParserColumnsCSV.columns_deezer_successful
             csv_name = CSVNames.csv_basic_album_deezer_possible
         elif value_type == 'failed':
-            columns = self.columns_deezer_failed
+            columns = ParserColumnsCSV.columns_deezer_failed
             csv_name = CSVNames.csv_basic_album_deezer_failed
         value_path = os.path.join(FolderProject.folder_current, 
                                     FolderProject.folder_storage, value_name)
@@ -426,9 +434,9 @@ class ParserDefaultCSV:
                 value_check = value which is dedicated to work with default values
         Output: list of values which would be comfortable 
         """
-        # TODO think about another boolean variable
         value_path = os.path.join(FolderProject.folder_current, 
-                                    FolderProject.folder_storage, 'check.json')
+                                FolderProject.folder_storage, 
+                                'check.json')
         if not value_song_dict and not value_check and not \
                 os.path.exists(value_path) and not os.path.isfile(value_path):
             return
@@ -436,7 +444,8 @@ class ParserDefaultCSV:
             with open(value_path, 'r') as value_file:
                 value_song_dict = json.load(value_file)
             if value_path == os.path.join(FolderProject.folder_current, 
-                                        FolderProject.folder_storage, 'one.json'):
+                                        FolderProject.folder_storage, 
+                                        'one.json'):
                 value_song_dict = [value_song_dict]
             else:
                 pass
@@ -454,21 +463,19 @@ class ParserDefaultCSV:
                 value_album_date = [value_song['Date'] for _ in range(value_song['Album_Length'])]
                 value_album_label = [value_song.get('Label', '') for _ in range(value_song['Album_Length'])]
                 
-                value_album_lyrics = [song.get('Lyrics', '') for song in value_song.get('Songs_Values', [])]
-                value_album_engineer = [song.get('Engineer', '') for song in value_song.get('Songs_Values', [])]
-                value_album_link_song = [song.get('Song_Link', '') for song in value_song.get('Songs_Values', [])]
-                value_album_written = [song.get('Written By', '') for song in value_song.get('Songs_Values', [])]
-                value_album_produced = [song.get('Produced by', '') for song in value_song.get('Songs_Values', [])]
-                value_album_recorded = [song.get('Recorded At', '') for song in value_song.get('Songs_Values', [])]
-                value_album_released = [song.get('Release Date', '') for song in value_song.get('Songs_Values', [])]
-        
+                value_album_song_number = value_song.get('Songs_Number', [])
+                value_album_song_name = value_song.get('Songs_Tracklist', [])
+                value_album_song_link = value_song.get('Songs_Links', [])
+                
                 value_df = pd.DataFrame(list(zip(value_album_id, value_album_name_df, value_artist_name_df, 
                                         value_year_df, value_album_len, value_album_link, value_album_name,
-                                        value_artist_name, value_album_date, value_album_label, value_album_lyrics, 
-                                        value_album_engineer, value_album_link_song, value_album_written, 
-                                        value_album_produced, value_album_recorded, value_album_released)), 
-                                        columns=self.columns_songs_genius)
-                self.produce_merge_dataframe(value_df, self.columns_songs_genius, CSVNames.csv_basic_song_genius)
+                                        value_artist_name, value_album_date, value_album_label, 
+                                        value_album_song_number, value_album_song_name, value_album_song_link)),
+                                        columns=ParserColumnsCSV.columns_songs_genius)
+                self.produce_merge_dataframe(
+                    value_df, 
+                    ParserColumnsCSV.columns_songs_genius, 
+                    CSVNames.csv_basic_song_genius)
 
     def produce_song_remake_values_old(self, value_song_dict:dict={}, value_check:bool=False) -> list:
         """
@@ -520,7 +527,8 @@ class ParserDefaultCSV:
                                         value_song_link_youtube, value_song_link_genius, value_song_number,
                                         value_song_name, value_song_apple_id, value_song_artwork, 
                                         value_song_duration, value_song_artist_dislay_name,
-                                        value_song_id_add, value_song_title)), columns=self.columns_songs)
+                                        value_song_id_add, value_song_title)), 
+                                        columns=ParserColumnsCSV.columns_songs)
                 self.produce_merge_dataframe_old(value_df)
             else:
                 value_album_id = [value_song.get('Album_ID', '')]
@@ -585,12 +593,18 @@ class ParserDefaultCSV:
         parser_genius = ParserGenius()
         if df_calculated.empty:
             df_calculated = self.produce_basic_value()
-        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(CSVNames.csv_basic_song_genius)
-        
+        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(
+            CSVNames.csv_basic_song_genius)
         for value_id, value_album, value_artist, value_year in zip(values_id[:1], values_album[:1], values_artist[:1], values_year[:1]):
             start = time.time()
             loop = asyncio.get_event_loop()
-            value_songs = loop.run_until_complete(parser_genius.parse_genius_song_additional_info(value_album, value_artist, True))
+            value_songs = loop.run_until_complete(
+                parser_genius.parse_genius_song_additional_info(
+                    value_album, 
+                    value_artist, 
+                    True
+                    )
+                )
             [f.update({'Album_ID':i, 'Album_Name_df':n, 'Artist_Name_df':a, 'Year_df':y}) 
                 for f, i, n, a, y in zip(value_songs, value_id, value_album, value_artist, value_year)]
             self.get_values_json(value_songs[0], 'one.json')
@@ -600,7 +614,7 @@ class ParserDefaultCSV:
             print('=============================================================================')
             print(f'It took time: {time.time() - start}')
             print('#############################################################################')
-            self.produce_song_remake_values_genius({})
+            self.produce_song_remake_values_genius(value_songs)
 
     @staticmethod
     def get_combine_values_deezer(id:list, names:list, artists:list, years:list, songs:list, found:list, possible:list, failed:list) -> set:
@@ -694,7 +708,10 @@ class ParserDefaultCSV:
             print(f'We failed to find such albums:\n{value_msg}')
             print('=============================================================================')
 
-            for save_value, save_backup, save_option in zip(value_got, self.json_deezer_names, self.deezer_options):
+            for save_value, save_backup, save_option in zip(
+                    value_got, 
+                    ParserColumnsCSV.json_deezer_names, 
+                    ParserColumnsCSV.deezer_options):
                 self.get_values_json(save_value, save_backup)
                 self.produce_song_remake_values_deezer(save_value, 1, save_option, save_backup)
             print(f'It took time: {time.time() - start}')

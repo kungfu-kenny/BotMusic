@@ -3,8 +3,9 @@ import telegram.telegram_ui
 from db.db_creator import SessionCreator
 from parsers.parser_default_csv import ParserDefaultCSV
 
+
 # SessionCreator()
-ParserDefaultCSV()
+ParserDefaultCSV(yandex=True)
 
 #TODO add here them bot for telegram
 # try:

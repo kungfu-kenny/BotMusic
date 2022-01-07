@@ -333,9 +333,15 @@ class ParserGenius:
             async with aiohttp.ClientSession(trust_env=True) as session:
                 value_return = await self.make_html_links(session, links, True)
         tasks = [asyncio.create_task(
-                    self.parse_genius_automatic_album_link(value_html, link)) 
+                    self.parse_genius_automatic_album_link(
+                        value_html, 
+                        link)
+                    ) 
                     for value_html, link in zip(value_return, links)]
         results = await asyncio.gather(*tasks)
+        #TODO remove all unneccessary code after
+        if 1 > 0:
+            return results
         
         async with semaphore:
             for value_album in results:
@@ -344,7 +350,11 @@ class ParserGenius:
                     value_return = await self.make_html_links(session, links, True)
 
                 tasks = [asyncio.create_task(
-                            self.parse_genius_manually_album_link(value_html, link, value_repeat)) 
+                            self.parse_genius_manually_album_link(
+                                value_html, 
+                                link, 
+                                value_repeat)
+                            ) 
                             for value_html, link in zip(value_return, links)]
                 value_album.update({"Songs_Values": await asyncio.gather(*tasks)})
         return results
