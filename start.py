@@ -5,7 +5,7 @@ from parsers.parser_default_csv import ParserDefaultCSV
 
 
 # SessionCreator()
-ParserDefaultCSV(yandex=True)
+ParserDefaultCSV(yandex=True, google=True)
 
 #TODO add here them bot for telegram
 # try:

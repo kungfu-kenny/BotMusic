@@ -39,23 +39,23 @@ class ParserDefaultCSV:
                 apple = boolean parameter to parse apple music
         Output: we created values 
         """
+        if kwargs.get('genius') and not kwargs.get('all'):
+            self.produce_basic_values_genius()
+        if kwargs.get('deezer') and not kwargs.get('all'):
+            self.produce_basic_values_deezer()
+        if kwargs.get('google') and not kwargs.get('all'):
+            self.produce_basic_google_search()
+        if kwargs.get('yandex') and not kwargs.get('all'):
+            self.produce_basic_yandex_search()
+        if kwargs.get('apple') and not kwargs.get('all'):
+            self.produce_basic_values_apple_music()
         if kwargs.get('all'):
             self.produce_basic_values_genius()
             self.produce_basic_values_deezer()
             self.produce_basic_google_search()
             self.produce_basic_yandex_search()
             self.produce_basic_values_apple_music()
-        elif kwargs.get('genius'):
-            self.produce_basic_values_genius()
-        elif kwargs.get('deezer'):
-            self.produce_basic_values_deezer()
-        elif kwargs.get('google'):
-            self.produce_basic_google_search()
-        elif kwargs.get('yandex'):
-            self.produce_basic_yandex_search()
-        elif kwargs.get('apple'):
-            self.produce_basic_values_apple_music()
-
+        
     def check_presence_files(self) -> bool:
         """
         Method which is dedicated to check presence of necessary files for further work

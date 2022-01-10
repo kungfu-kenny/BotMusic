@@ -293,14 +293,14 @@ class ParserYandexMusic:
         links = await self.produce_list_selected_links(value_artists, value_albums)
         semaphore = asyncio.Semaphore(LinkYandex.yandex_semaphore_threads)
         async with semaphore:
-            async with aiohttp.ClientSession(trust_env=True) as session:
+            async with aiohttp.ClientSession(trust_env=True, connector=aiohttp.TCPConnector(force_close=True)) as session:
                 value_return = await self.make_html_links(session, links)
         tasks = [asyncio.create_task(self.produce_basic_json_results_album(value_html, link, album, artist, year)) 
                 for value_html, (link, album, artist), year in zip(value_return, links, value_years)]
         results = await asyncio.gather(*tasks)
         value_result, value_successfull, value_possible = self.produce_refresh_values(results)
         async with semaphore:
-            async with aiohttp.ClientSession(trust_env=True) as session:
+            async with aiohttp.ClientSession(trust_env=True, connector=aiohttp.TCPConnector(force_close=True)) as session:
                 value_return = await self.make_html_links(session, [f.get('Album Link', 'Undefined') for f in value_result], True)
         tasks = [asyncio.create_task(self.produce_album_song_info(html)) for html in value_return]
         value_albums = await asyncio.gather(*tasks)
