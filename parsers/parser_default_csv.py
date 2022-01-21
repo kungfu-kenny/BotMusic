@@ -727,7 +727,8 @@ class ParserDefaultCSV:
         if df_calculated.empty:
             df_calculated = self.produce_basic_value()
         values_id, values_album, values_artist, values_year = self.get_values_songs_usage(CSVNames.csv_basic_song_deezer)
-        parser_google_search.produce_manually_search_albums_google()
+        for value_id, value_album, value_artist, value_year in zip(values_id, values_album, values_artist, values_year):
+            value_test = parser_google_search.produce_manually_search_albums_google(value_album, value_artist, value_year)
 
     def produce_changes_yandex_search(self, *args:set) -> set:
         """
