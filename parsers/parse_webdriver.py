@@ -3,6 +3,7 @@ import zipfile
 import requests
 from config import link_webdriver, FolderProject
 
+
 class ParseWebDriver:
     """
     class which is dedicated to work with selenium and install selenium manually
@@ -10,7 +11,7 @@ class ParseWebDriver:
     def __init__(self) -> None:
         self.name_archive = link_webdriver.split('/')[-1]
         self.path, self.path_webdriver, \
-            self.path_archive  = self.get_path_driver()
+        self.path_archive, self.path_webdriver_direct = self.get_path_driver()
         self.presence_driver, \
             self.presence_archive = self.check_driver_presence()
 
@@ -22,8 +23,10 @@ class ParseWebDriver:
         """
         value_path = os.path.join(FolderProject.folder_current, 
                                 FolderProject.folder_storage) 
-        return value_path, os.path.join(value_path, 'chromedriver'), \
-                os.path.join(value_path, self.name_archive)
+        value_path_folder = os.path.join(value_path, 'chromedriver')
+        return value_path, value_path_folder, \
+                os.path.join(value_path, self.name_archive), \
+                os.path.join(value_path_folder, 'chromedriver')
 
     def check_driver_presence(self) -> set:
         """
@@ -32,8 +35,8 @@ class ParseWebDriver:
         Output: boolean value which is required to be used
         """
         os.path.exists(self.path) or os.mkdir(self.path)
-        return (os.path.exists(os.path.join(self.path_webdriver, 'chromedriver')) and \
-                os.path.isfile(os.path.join(self.path_webdriver, 'chromedriver')) or \
+        return (os.path.exists(self.path_webdriver_direct) and \
+                os.path.isfile(self.path_webdriver_direct) or \
                 os.path.exists(self.path_webdriver) and os.path.isfile(self.path_webdriver)), \
                 os.path.exists(self.path_archive) and os.path.isfile(self.path_archive)
 
@@ -44,7 +47,7 @@ class ParseWebDriver:
         Output: we created and unarchived values
         """
         if self.presence_driver:
-            return os.path.join(self.path_webdriver, 'chromedriver')
+            return self.path_webdriver_direct
         elif not self.presence_driver and self.presence_archive:
             self.produce_further_transformations()
         else:
@@ -52,7 +55,7 @@ class ParseWebDriver:
             with open(self.path_archive, 'wb') as archive_new:
                 archive_new.write(archive_value.content)
             self.produce_further_transformations()
-        return os.path.join(self.path_webdriver, 'chromedriver')
+        return self.path_webdriver_direct
 
     def produce_further_transformations(self) -> None:
         """

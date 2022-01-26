@@ -5,6 +5,7 @@ from pprint import pprint
 import json
 import numpy as np
 import pandas as pd
+from sqlalchemy import ColumnDefault
 from parsers.parser_genius import ParserGenius
 from parsers.parser_deezer import ParserDeezer
 from parsers.parser_apple_music import ParserAppleMusic
@@ -245,8 +246,12 @@ class ParserDefaultCSV:
         value_df_path = os.path.join(self.folder_defaults, name)
         if not os.path.exists(value_df_path):
             return self.produce_basic_csv_save(value_df, value_df_path)
-        value_df_file = pd.read_csv(value_df_path)
-        result = pd.concat([value_df_file, value_df], keys=columns)
+        result = pd.concat(
+            [
+                pd.read_csv(value_df_path), 
+                value_df
+            ], 
+            keys=columns)
         result.drop_duplicates(subset=subset, keep=keep, inplace=True)
         self.produce_basic_csv_save(result, value_df_path)
 
@@ -476,6 +481,28 @@ class ParserDefaultCSV:
                     value_df, 
                     ParserColumnsCSV.columns_songs_genius, 
                     CSVNames.csv_basic_song_genius)
+    
+    def produce_song_remake_values_google(self, value_list:list, value_success:bool=False) -> None:
+        """
+        Method which is dedicated to produce .csv values to all of it
+        Input:  value_list = list of the selected values
+                value_success = boolean value which signify successful or not values
+        Output: we developed the list of the list
+        """
+        if value_success:
+            columns = ParserColumnsCSV.columns_google_successful
+            value_file = CSVNames.csv_basic_album_google
+        else:
+            columns = ParserColumnsCSV.columns_google_failed
+            value_file = CSVNames.csv_basic_album_google_failed
+        
+        if value_list:
+            value_df = pd.DataFrame(value_list)
+            self.produce_merge_dataframe(
+                value_df, 
+                columns, 
+                value_file
+                )
 
     def produce_song_remake_values_old(self, value_song_dict:dict={}, value_check:bool=False) -> list:
         """
@@ -726,9 +753,24 @@ class ParserDefaultCSV:
         parser_google_search = ParserGoogleSearch()
         if df_calculated.empty:
             df_calculated = self.produce_basic_value()
-        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(CSVNames.csv_basic_song_deezer)
+        values_id, values_album, values_artist, values_year = self.get_values_songs_usage(CSVNames.csv_basic_album_google)
         for value_id, value_album, value_artist, value_year in zip(values_id, values_album, values_artist, values_year):
-            value_test = parser_google_search.produce_manually_search_albums_google(value_album, value_artist, value_year)
+            start = time.time()
+            loop = asyncio.get_event_loop()
+            success, fail = loop.run_until_complete(
+                parser_google_search.produce_manually_search_albums_google(
+                    value_id,
+                    value_album, 
+                    value_artist, 
+                    value_year
+                    )
+                )
+            
+            self.produce_song_remake_values_google(success, True)
+            self.produce_song_remake_values_google(fail)
+            
+            print(f'It took time: {time.time() - start}')
+            print('#############################################################################')
 
     def produce_changes_yandex_search(self, *args:set) -> set:
         """

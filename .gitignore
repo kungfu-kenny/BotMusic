@@ -14,6 +14,8 @@ Basic_Song_Deezer.csv
 Basic_Album_Deezer_Failed.csv
 Basic_Album_Deezer_Possible.csv
 Basic_Album_Deezer_Successful.csv
+Basic_Album_Google_Successful.csv
+Basic_Album_Google_Failed.csv
 
 .~lock.Year.csv#
 .~lock.Basic.csv#
@@ -26,3 +28,5 @@ Basic_Album_Deezer_Successful.csv
 .~lock.Basic_Album_Deezer_Failed.csv#
 .~lock.Basic_Album_Deezer_Possible.csv#
 .~lock.Basic_Album_Deezer_Successful.csv#
+.~lock.Basic_Album_Google_Successful.csv#
+.~lock.Basic_Album_Google_Failed.csv#

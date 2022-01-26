@@ -51,9 +51,11 @@ class CSVNames:
     csv_basic_song_genius = "Basic_Song_Genius.csv"
     csv_basic_song_yandex = "Basic_Song_Yandex.csv"
     csv_advanced_song_yandex = "Advanced_Song_Yandex.csv"
+    csv_basic_album_google = "Basic_Album_Google_Successful.csv"
+    csv_basic_album_google_failed = "Basic_Album_Google_Failed.csv"
     csv_basic_album_deezer_failed = "Basic_Album_Deezer_Failed.csv"
     csv_basic_album_deezer_possible = "Basic_Album_Deezer_Possible.csv"
-    csv_basic_album_deezer_success = "Basic_Album_Deezer_Successful.csv"    
+    csv_basic_album_deezer_success = "Basic_Album_Deezer_Successful.csv"  
 ######################NAME DATABASE########################################
 
 table_user = 'user'
@@ -127,6 +129,20 @@ class LinkYandex:
     link_yandex_space = '%20'
     link_yandex_dollar = '%24'
     link_yandex_doublecom = '%3A'
+#######################PARSE GOOGLE########################################
+
+@dataclass
+class LinkGoogle:
+    google_semaphore_threads = 10
+    google_search_youtube = 'YouTube'
+    google_search_youtube_music = 'YouTube Music'
+    google_search_deezer = 'Deezer'
+    link_google_a = "%40"
+    link_google_comsep = '%3B'
+    link_google_space = '%20'
+    link_google_dollar = '%24'
+    link_google_doublecom = '%3A'
+
 
 @dataclass
 class ParserColumnsCSV:
@@ -148,5 +164,7 @@ class ParserColumnsCSV:
                     'Artist_Dummy_Deezer', 'Album_Number_Track_Deezer', 'Type_Deezer', 'Link_Searched_Deezer', 
                     'Link_Album_Deezer', 'Checked_Album_Deezer', 'Checked_Artist_Deezer']
     columns_deezer_failed = ["Album_ID", 'Album_Name_df', 'Artist_Name_df', 'Year_df', 'Link_Search_Failed_Deezer']
+    columns_google_successful = ["Album_ID", "Album_Name", "Artist", "Link", "YouTube", "YouTube Music", "Deezer", "Year"]
+    columns_google_failed = columns_deezer_successful
     deezer_options = ['songs', 'successful', 'possible', 'failed']
     json_deezer_names = ['deezer_songs.json', 'deezer_successfull.json', 'deezer_possible.json', 'deezer_failed.json']
