@@ -94,6 +94,7 @@ class LinkGenius:
 
 @dataclass
 class LinkAppleMusic:
+    apple_music_album_wait = 3
     apple_music_semaphore_threads = 10
     link_apple_music = 'https://music.apple.com'
     link_apple_music_us = 'us'
@@ -165,6 +166,6 @@ class ParserColumnsCSV:
                     'Link_Album_Deezer', 'Checked_Album_Deezer', 'Checked_Artist_Deezer']
     columns_deezer_failed = ["Album_ID", 'Album_Name_df', 'Artist_Name_df', 'Year_df', 'Link_Search_Failed_Deezer']
     columns_google_successful = ["Album_ID", "Album_Name", "Artist", "Link", "YouTube", "YouTube Music", "Deezer", "Year"]
-    columns_google_failed = columns_deezer_successful
+    columns_google_failed = ["Album_ID", "Album_Name", "Artist", "Link", "Year"]
     deezer_options = ['songs', 'successful', 'possible', 'failed']
     json_deezer_names = ['deezer_songs.json', 'deezer_successfull.json', 'deezer_possible.json', 'deezer_failed.json']

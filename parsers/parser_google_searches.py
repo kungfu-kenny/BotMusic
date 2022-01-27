@@ -1,8 +1,12 @@
-import json
 import asyncio
 from urllib import parse
 from pprint import pprint
 from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
+from fake_useragent import UserAgent
 from parsers.parse_webdriver import ParseWebDriver
 from config import LinkGoogle
 
@@ -37,6 +41,7 @@ class ParserGoogleSearch:
     def get_chrome_options():
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument("headless")
+        chrome_options.add_argument(f"user-agent={UserAgent().random}")
         return chrome_options
 
     async def produce_manual_search_link_google(self, link:str) -> dict:
@@ -46,7 +51,6 @@ class ParserGoogleSearch:
         Output: we developed values of the string to it
         """
         value_get = {}
-
         self.driver.get(link)
         check = self.driver.find_elements_by_css_selector(".ellip [href]")
         text = [f.text for f in check]
@@ -83,16 +87,14 @@ class ParserGoogleSearch:
             executable_path=self.webdriver.path_webdriver_direct, 
             chrome_options=self.chrome_options
             )
-        semaphore = asyncio.Semaphore(LinkGoogle.google_semaphore_threads)
-        async with semaphore:
-            links = [
-                self.develop_link_google(
-                    artist, 
-                    album
-                ) 
-                for artist, album in zip(artists, albums)]
-            value_get = [
-                await self.produce_manual_search_link_google(link) for link in links]
+        links = [
+            self.develop_link_google(
+                artist, 
+                album
+            ) 
+            for artist, album in zip(artists, albums)]
+        value_get = [
+            await self.produce_manual_search_link_google(link) for link in links]
         value_present, value_empty = [], []
         for id, dct, link, album, artist, year in zip(ids, value_get, links, albums, artists, years):
             if not dct:

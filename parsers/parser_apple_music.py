@@ -1,10 +1,16 @@
-# import aiohttp
+import time
 import asyncio
 from pprint import pprint
+from unittest import result
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
 from fake_useragent import UserAgent
 from parsers.parse_webdriver import ParseWebDriver
+# from parsers.parser_default_csv import ParserDefaultCSV
 from config import LinkAppleMusic
 
 
@@ -15,15 +21,18 @@ class ParserAppleMusic:
     """
     def __init__(self) -> None:
         self.chromedriver = ParseWebDriver().produce_webdriver_values()
-        self.link_search_begin = '/'.join([LinkAppleMusic.link_apple_music, 
-                                        LinkAppleMusic.link_apple_music_us, 
-                                        LinkAppleMusic.link_apple_music_search])
+        self.link_search_begin = '/'.join([
+            LinkAppleMusic.link_apple_music, 
+            LinkAppleMusic.link_apple_music_us, 
+            LinkAppleMusic.link_apple_music_search
+        ])
     
     def work_options(self) -> None:
         """
         Method which is dedicated to produce the values of the webdriver
         """
         self.options = webdriver.ChromeOptions()
+        self.options.add_argument("headless")
         self.options.add_argument(f"user-agent={UserAgent().random}")
 
     def get_link_values_album_search(self, value_artist:str, value_album:str) -> set:
@@ -51,49 +60,99 @@ class ParserAppleMusic:
             if case in value_str:
                 value_str = value_str.replace(case, LinkAppleMusic.link_apple_music_space)
         return value_str.replace(' ', LinkAppleMusic.link_apple_music_space)
+    
+    @staticmethod
+    def make_list_sublists(value_list:list, default_val:int=10) -> list:
+        """
+        Static method which is dedicated to produce values of the sublists of dafault_val size
+        Input:  value_list = list of the values
+                default_val = size of the lists
+        Output: list of the sublists
+        """
+        def chunk(value_list:list, value_len:int):
+            """
+            Function for chunking values of the
+            Input:  value_list = original list
+                    value_len = length of the sublists
+            Output: len on which to chunk values
+            """
+            for i in range(0, len(value_list), value_len):
+                yield value_list[i:i + value_len]
+        return list(chunk(value_list, default_val))
 
-    async def get_html_value_analysis_album(self, value_html:str, value_link:str) -> str:
+    async def make_html_links(self, value_list:list) -> list:
         """
-        Method which is dedicated to get from html values to the list of the values for ge
-        Input:  value_html = html of the parsed values
-                value_link = value of selected link search
-        Output: list of the values which were previously used for the values to it
+        Async method which is dedicated to develop the dict values from the album 
+        Input:  value_list = list value of the album
+        Output: we developed 
         """
-        if len(value_html) < 1000:
-            return ''
-        soup = BeautifulSoup(value_html, "html.parser")
-        # print(soup)
-        top_results = soup.find("div", {"class": "search-landing"})
-        top_results = top_results.find_all("h2")#, {"class": "search__search-hits"})
-        print(top_results)
-        return 'che'
-
-
-    async def parse_apple_manually_link(self, value_name_album:str) -> str:
-        """
-        Method which is dedicated to produce manuall search of the albums in caes that we are looking by album
-        Input:  session = session object for the search
-                value_name_album = album name which is going to be parsed
-                value_check = value 
-        Output: we successfully parsed all names which were used on the genius
-        """
-        # if value_name_album == 'Undefined':
-        #     return value_name_album
-        # async with session.get(value_name_album) as r:
-        #     if r.status == 200:
-        #         return await r.text()
-        return value_name_album
-
-    async def make_html_links(self, value_links:str) -> list:
-        """
-        Async method which is dedicated to asyncronously return 
-        Input:  value_links = list with the links values of the values
-        Output: list with the html values
-        """
-        tasks = [asyncio.create_task(self.parse_apple_manually_link(value_link))
-                                        for value_link, *_ in value_links]
-        return await asyncio.gather(*tasks)
+        self.driver.get(value_list[0])
+        try:
+            WebDriverWait(self.driver, LinkAppleMusic.apple_music_album_wait).until(
+                EC.presence_of_element_located(
+                        (
+                        By.CLASS_NAME, 
+                        'search__search-hits'
+                        )
+                    )
+                )
+        except TimeoutException:
+            return [{
+                "Year": value_list[3],
+                "Link": value_list[0],
+                "Album Name": value_list[2],
+                "Artist": value_list[1]
+            }]
         
+        check = self.driver.find_elements_by_class_name("lockup__lines [href]")
+        text = self.make_list_sublists([f.text for f in check], 2)
+        links = self.make_list_sublists([f.get_attribute('href') for f in check], 2)
+        
+        return [
+            {
+                "Album Name Searched": names[0],
+                "Artist Searched": names[1],
+                "Album Link": links[1],
+                "Artist Link": links[0],
+                "Year": value_list[3],
+                "Link": value_list[0],
+                "Album Name": value_list[2],
+                "Artist": value_list[1]
+            }
+            for names, links in zip(text, links)
+            if len(names) == len(links) == 2
+        ]
+
+    #TODO complete this function
+    def check_success(self, value_dict:dict) -> bool:
+        """
+        Method which is dedicated to develop the values of the created values
+        Input:  value_dict = dictionary value which was succcessfully parsed from it
+        Output: we developed the values 
+        """
+        value_list_similar = []
+        # for similar in 
+        return False
+
+    def produce_values_checked_values(self, value_parsed:list) -> set:
+        """
+        Method which is dedicated to develop values of the giving
+        Input:  value_parsed = list of the parsed dictionary to the given values
+        Output: set of the matched, similar, possible and failed values
+        """
+        value_successful, value_possible, value_failed = [], [], []
+        for value_got in value_parsed:
+            #TODO check the failed values
+            if len(value_got) == 1 and len(value_got[0].keys()) == 4:
+                value_failed.extend(value_got)
+            else:
+                for value_parsed in value_got:
+                    if self.check_success():
+                        value_successful.append(value_parsed)
+                    else:
+                        value_possible.append(value_parsed)
+        return value_successful, value_possible, value_failed
+
     async def get_produce_apple_music_search(self, value_artists:list, value_albums:list, value_year:list) -> dict:
         """
         Method which is dedicated to produce of searching from the apple music about albums
@@ -105,32 +164,11 @@ class ParserAppleMusic:
         self.work_options()
         self.driver = webdriver.Chrome(self.chromedriver, options=self.options)
         links = [self.get_link_values_album_search(album, artist) for album, artist in zip(value_albums, value_artists)]
-        print(links)
-        print('###########################################################')
-        semaphore = asyncio.Semaphore(LinkAppleMusic.apple_music_semaphore_threads)
-        async with semaphore:
-            value_return = await self.make_html_links(links)
-        # tasks = [asyncio.create_task(self.get_html_value_analysis_album(value_html, link)) for value_html, link in zip(value_return[:1], links[:1])]
-        # results = await asyncio.gather(*tasks)
-        
-        #TODO think about next scripts !
-        # k = requests.get("https://www.deezer.com/search/beatles%20Sgt.%20Pepper's%20Lonely%20Hearts%20Club%20Band/album").text
-        # soup = BeautifulSoup(k, "html.parser")
-        # print(soup)
-        # check = soup.find(id="dzr-app")
-        # check = soup.find("div", {"class":"hidden"})#id="naboo_content")# soup.find_all('link')#liYKde g 
-        # import json
-        # from parser_default_csv import ParserDefaultCSV
-        # ParserDefaultCSV().get_values_json(script, 'two.json')
-        # script = json.loads(check.find("script").text.split('window.__DZR_APP_STATE__ = ')[-1])
-        # print(script)
-        # return script
-
-        #TODO get values of the links asyncronously
-        #TODO get the html values
-        #TODO write the values of getting values
-        #TODO get the link and the parse all values from the link
-        #TODO get dictionary values 
+        for link, year in zip(links, value_year):
+            link.append(year)
+        tasks = [asyncio.create_task(self.make_html_links(link)) for link in links]
+        results_search = await asyncio.gather(*tasks)
+        pprint(results_search[0])
         self.driver.close()
         self.driver.quit()
         return [], [], [], []

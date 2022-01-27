@@ -702,7 +702,10 @@ class ParserDefaultCSV:
             start = time.time()
             loop = asyncio.get_event_loop()
             value_songs, value_found, value_possible, value_failed = \
-                    loop.run_until_complete(parser_apple.get_produce_apple_music_search(value_album, value_artist, value_year))
+                    loop.run_until_complete(parser_apple.get_produce_apple_music_search(value_album[:1], value_artist[:1], value_year[:1]))
+                    # loop.run_until_complete(parser_apple.get_produce_apple_music_search(value_album, value_artist, value_year))
+            print(f'It took time: {time.time() - start}')
+            print('#############################################################################')
 
     def produce_basic_values_deezer(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
         """
