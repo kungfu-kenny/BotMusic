@@ -94,12 +94,13 @@ class LinkGenius:
 
 @dataclass
 class LinkAppleMusic:
-    apple_music_album_wait = 3
+    apple_music_album_wait = 4
     apple_music_semaphore_threads = 10
     link_apple_music = 'https://music.apple.com'
     link_apple_music_us = 'us'
     link_apple_music_space = '%20'
     link_apple_music_search = 'search?term='    
+    list_used_check = [' (Original Mono & Stereo Mix Versions)', " (Remastered)"]
 #######################PARSE DEEZER########################################
 
 @dataclass
