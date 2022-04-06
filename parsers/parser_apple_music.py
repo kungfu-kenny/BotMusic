@@ -20,12 +20,15 @@ class ParserAppleMusic:
     and get parameters from the values
     """
     def __init__(self) -> None:
+        self.work_options()
         self.chromedriver = ParseWebDriver().produce_webdriver_values()
-        self.link_search_begin = '/'.join([
-            LinkAppleMusic.link_apple_music, 
-            LinkAppleMusic.link_apple_music_us, 
-            LinkAppleMusic.link_apple_music_search
-        ])
+        self.link_search_begin = '/'.join(
+            [
+                LinkAppleMusic.link_apple_music, 
+                LinkAppleMusic.link_apple_music_us, 
+                LinkAppleMusic.link_apple_music_search
+            ]
+        )
     
     def work_options(self) -> None:
         """
@@ -44,10 +47,23 @@ class ParserAppleMusic:
                 id = id value of the searched
         Output: set of the values with the link, value artist, value_album
         """
-        translated_album = self.get_value_translate(value_album)
-        translated_artist = self.get_value_translate(value_artist)
-        value_search = LinkAppleMusic.link_apple_music_space.join([translated_artist, translated_album])
-        return [f"{self.link_search_begin}{value_search}", value_artist, value_album, year, id]
+        value_search = LinkAppleMusic.link_apple_music_space.join(
+            [
+                self.get_value_translate(f)
+                for f in
+                [
+                    value_artist,
+                    value_album
+                ]
+            ]
+        )
+        return [
+            f"{self.link_search_begin}{value_search}", 
+            value_artist, 
+            value_album, 
+            year, 
+            id
+        ]
 
     @staticmethod
     def get_value_translate(value_str:str) -> str:
@@ -223,27 +239,48 @@ class ParserAppleMusic:
                 value_year = list of the years of the seleted values
         Output: dictionary with fully parsed values for the further search
         """
-        self.work_options()
         self.driver = webdriver.Chrome(self.chromedriver, options=self.options)
-        links = [self.get_link_values_album_search(album, artist, year, ids) 
+        links = [
+            self.get_link_values_album_search(
+                album, 
+                artist, 
+                year, 
+                ids
+            ) 
             for album, artist, year, ids in 
-            zip(value_albums, value_artists, value_year, value_id)]
+            zip(
+                value_albums, 
+                value_artists, 
+                value_year, 
+                value_id
+            )
+        ]
+        print(links)
+        print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
         tasks = [asyncio.create_task(self.make_html_links(link)) for link in links]
         results_search = await asyncio.gather(*tasks)
         self.driver.close()
         self.driver.quit()
+        pprint(results_search)
+        print('???????????????????????????????????????????????????????????????')
         value_successful, value_possible, value_failed = self.produce_check_parsed(results_search)
         pprint(value_successful)
         print('dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd')
-        semaphore = asyncio.Semaphore(LinkAppleMusic.apple_music_semaphore_threads)
-        async with semaphore:
-            async with aiohttp.ClientSession(trust_env=True, connector=aiohttp.TCPConnector(force_close=True)) as session:
-                value_return = await self.make_html_links_song(session, value_successful)
-            # print(value_return[0])
-        print(len(value_return))
-        if not value_return:
-            return [], [], [], []
-        self.produce_basic_json_results_album(value_successful[0], value_return[0][0], value_return[0][1])
+        pprint(value_possible)
+        print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        pprint(value_failed)
+        print('mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm')
+        #TODO continue from here
+        
+        # semaphore = asyncio.Semaphore(LinkAppleMusic.apple_music_semaphore_threads)
+        # async with semaphore:
+        #     async with aiohttp.ClientSession(trust_env=True, connector=aiohttp.TCPConnector(force_close=True)) as session:
+        #         value_return = await self.make_html_links_song(session, value_successful)
+        #     # print(value_return[0])
+        # print(len(value_return))
+        # if not value_return:
+        #     return [], [], [], []
+        # self.produce_basic_json_results_album(value_successful[0], value_return[0][0], value_return[0][1])
         # tasks = [asyncio.create_task(self.produce_basic_json_results_album(value_html, link, album, artist, year)) 
         #         for value_html, (link, album, artist), year in zip(value_return, links, value_years)]
         # results = await asyncio.gather(*tasks)
