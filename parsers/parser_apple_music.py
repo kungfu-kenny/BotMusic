@@ -1,8 +1,6 @@
-# import time
-import aiohttp
+import time
 import asyncio
 from pprint import pprint
-from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -36,6 +34,7 @@ class ParserAppleMusic:
         """
         self.options = webdriver.ChromeOptions()
         self.options.add_argument("headless")
+        self.options.add_argument("--start-maximized")
         self.options.add_argument(f"user-agent={UserAgent().random}")
 
     def get_link_values_album_search(self, value_artist:str, value_album:str, year:int, id:int) -> set:
@@ -179,57 +178,99 @@ class ParserAppleMusic:
                         value_possible.append(value_p)
         return value_successful, value_possible, value_failed
 
-    async def get_produce_apple_music_songs(self, session:object, link:str) -> str:
+    async def make_html_links_song_test(self, link:str, id:int) -> dict:
         """
-        Async method which is dedicated to produce values
-        Input:  session = object of the aiohttp
-                link = link which is required to get values
-        Output: we developed dictionary with developed values for the song 
+        Method which is dedicated to check the values of the song test
+        Input:  link = link which is dedicated for getting values
+                id = id of the selected values
+        Output: dictionary of the parsed values
         """
-        if not link:
-            return '', ''
-        async with session.get(link) as r:
-            if r.status == 200:
-                return await r.text(), link
-            return '', ''
-
-    # async 
-    def produce_basic_json_results_album(self, value_dict:dict, value_html:str, link:str) -> dict:
-        """
-        Async method which is dedicated to produce values of the getting values for the 
-        Input:  value_dict = dictionary of the previously parsed values
-                value_html = text values of the html
-                link = link which was previously parsed
-        Output: we developed values of the dictionary of the
-        """
-        if len(value_html) < 1000:
-            print(value_html)
-            print("EMPTY@@@@@")
-            return value_dict
-        soup = BeautifulSoup(value_html, 'html.parser')
-        # soup_json = soup.find_all('meta')#, content="summary")
-        soup_json = soup.find_all("script", type="application/ld+json")#attrs={'name':"schema"})#
-        print(soup_json)
-        print('ffffffffffffffffffffffffffffffffffffffffffffffffffff')
-        
-
-    async def make_html_links_song(self, session:object, links:list) -> list:
-        """
-        Method which is dedicated to make html values from the links
-        Input:  session = session object which is from the aiohttp
-                links = list with links for getting values
-                value_multiple = boolean which signify the status of the sent links
-        Output: we developed html for the links
-        """
-        tasks = [
-            asyncio.create_task(
-                self.get_produce_apple_music_songs(
-                    session, 
-                    link.get('Link')
+        driver = webdriver.Chrome(self.chromedriver, options=self.options)
+        songs, length = [], []
+        released, album, artist, artist_link, desc_basic = '', '', '', '', ''
+        if link:
+            self.driver.get(link)
+            try:
+                WebDriverWait(self.driver, LinkAppleMusic.apple_music_album_wait).until(
+                    EC.presence_of_element_located(
+                            (
+                            By.CSS_SELECTOR, 
+                            'div.header-and-songs-list'
+                            )
+                        )
+                    and 
+                    EC.presence_of_all_elements_located(
+                        (
+                        By.CSS_SELECTOR, 
+                        'div.songs-list-row__song-name'
+                        )
+                    ) 
+                    and
+                    EC.presence_of_all_elements_located(
+                        (
+                        By.CSS_SELECTOR, 
+                        'time.songs-list-row__length'
+                        )
                     )
-                ) 
-            for link in links]
-        return await asyncio.gather(*tasks)
+                )
+            except TimeoutException:
+                driver.close()
+                driver.quit()
+                return {
+                    "ID": id,
+                    "Songs": songs,
+                    "Length": length,
+                    "Released": released,
+                    "Album Name": album,
+                    "Artist Name": artist,
+                    "Artist Link": artist_link,
+                    "Description Basic": desc_basic,
+                }
+            
+            released = driver.find_element_by_css_selector('p.song-released-container').text
+            album = driver.find_element_by_css_selector('h1#page-container__first-linked-element').text
+            artist = driver.find_element_by_css_selector('div.product-creator.typography-large-title').text
+            artist_link = driver.find_element_by_css_selector('a.dt-link-to').get_attribute('href')
+            desc_basic = driver.find_element_by_css_selector('div.product-meta.typography-callout-emphasized').text
+            
+            songs = [
+                f.text 
+                for f in 
+                driver.find_elements_by_css_selector('div.songs-list-row__song-name')
+                # WebDriverWait(self.driver, LinkAppleMusic.apple_music_album_wait).until(
+                #     EC.presence_of_all_elements_located(
+                #         (
+                #         By.CSS_SELECTOR, 
+                #         'div.songs-list-row__song-name'
+                #         )
+                #     )
+                # )
+            ]
+            length = [
+                f.get_attribute('datetime') for f in 
+                driver.find_elements_by_css_selector('time.songs-list-row__length')
+                # WebDriverWait(self.driver, LinkAppleMusic.apple_music_album_wait).until(
+                #     EC.presence_of_all_elements_located(
+                #         (
+                #         By.CSS_SELECTOR, 
+                #         'time.songs-list-row__length'
+                #         )
+                #     )
+                # )
+            ]
+        
+        driver.close()
+        driver.quit()        
+        return {
+            "ID": id,
+            "Songs": songs,
+            "Length": length,
+            "Released": released,
+            "Album Name": album,
+            "Artist Name": artist,
+            "Artist Link": artist_link,
+            "Description Basic": desc_basic,
+        }
 
     async def get_produce_apple_music_search(self, value_artists:list, value_albums:list, value_year:list, value_id:list) -> dict:
         """
@@ -255,33 +296,40 @@ class ParserAppleMusic:
                 value_id
             )
         ]
-        print(links)
-        print('<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
-        tasks = [asyncio.create_task(self.make_html_links(link)) for link in links]
+        
+        tasks = [
+            asyncio.create_task(
+                self.make_html_links(link)
+            ) 
+            for link in links]
         results_search = await asyncio.gather(*tasks)
         self.driver.close()
         self.driver.quit()
-        pprint(results_search)
-        print('???????????????????????????????????????????????????????????????')
-        value_successful, value_possible, value_failed = self.produce_check_parsed(results_search)
-        pprint(value_successful)
-        print('dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd')
-        pprint(value_possible)
-        print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        pprint(value_failed)
-        print('mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm')
-        #TODO continue from here
         
-        # semaphore = asyncio.Semaphore(LinkAppleMusic.apple_music_semaphore_threads)
-        # async with semaphore:
-        #     async with aiohttp.ClientSession(trust_env=True, connector=aiohttp.TCPConnector(force_close=True)) as session:
-        #         value_return = await self.make_html_links_song(session, value_successful)
-        #     # print(value_return[0])
-        # print(len(value_return))
-        # if not value_return:
-        #     return [], [], [], []
-        # self.produce_basic_json_results_album(value_successful[0], value_return[0][0], value_return[0][1])
-        # tasks = [asyncio.create_task(self.produce_basic_json_results_album(value_html, link, album, artist, year)) 
-        #         for value_html, (link, album, artist), year in zip(value_return, links, value_years)]
-        # results = await asyncio.gather(*tasks)
-        return [], [], [], []
+        value_successful, value_possible, value_failed = self.produce_check_parsed(results_search)
+        # self.driver = webdriver.Chrome(self.chromedriver, options=self.options)
+        
+        tasks = [
+            asyncio.create_task(
+                self.make_html_links_song_test(
+                    f.get('Album Link'),
+                    f.get('ID')
+                )
+            ) 
+            for f in value_successful
+        ]
+        value_songs = await asyncio.gather(*tasks)
+        
+        # value_songs = [
+        #     await self.make_html_links_song_test(
+        #         f.get('Album Link'),
+        #         f.get('ID')
+        #     )
+        #     for f in value_successful
+        # ]
+        
+        # self.driver.close()
+        # self.driver.quit()
+        pprint(value_songs)
+        
+        return value_songs, value_successful, value_possible, value_failed 

@@ -94,7 +94,7 @@ class LinkGenius:
 
 @dataclass
 class LinkAppleMusic:
-    apple_music_album_wait = 4
+    apple_music_album_wait = 10
     apple_music_semaphore_threads = 10
     link_apple_music = 'https://music.apple.com'
     link_apple_music_us = 'us'

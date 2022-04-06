@@ -703,18 +703,18 @@ class ParserDefaultCSV:
             loop = asyncio.get_event_loop()
             value_songs, value_found, value_possible, value_failed = loop.run_until_complete(
                 parser_apple.get_produce_apple_music_search(
-                    value_album[:1], 
-                    value_artist[:1], 
-                    value_year[:1], 
-                    value_id[:1]
-                    )
-                )
-                #     value_album, 
-                #     value_artist, 
-                #     value_year, 
-                #     value_id
+                #     value_album[:1], 
+                #     value_artist[:1], 
+                #     value_year[:1], 
+                #     value_id[:1]
                 #     )
                 # )
+                    value_album, 
+                    value_artist, 
+                    value_year, 
+                    value_id
+                    )
+                )
                                        
             print(f'It took time: {time.time() - start}')
             print('#############################################################################')
