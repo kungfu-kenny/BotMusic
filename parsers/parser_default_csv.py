@@ -281,9 +281,30 @@ class ParserDefaultCSV:
         result.drop_duplicates(subset=subset, keep=keep, inplace=True)
         self.produce_basic_csv_save(result, df_path)
 
+    #TODO continue work from here
+    def produce_song_remake_values_apple(self, value_list:list=[], value_check:bool=False, value_type:str='', value_name:str='') -> list:
+        """
+        Method which is dedicated to produce dataframe of the return and to store dataframe if neccessary
+        Input:  value_list = list which was previously parsed
+                value_check = boolean 
+                value_type = type which signs what is going to be searched
+                value_name = store value of it
+        Output: list which is comfortable to use in the future
+        """
+        if value_type == 'songs':
+            csv_name = CSVNames.csv_basic_song_apple
+        elif value_type == 'successful':
+            csv_name = CSVNames.csv_basic_album_apple_success
+        elif value_type == 'possible':
+            csv_name = CSVNames.csv_basic_album_apple_possible
+        elif value_type == 'failed':
+            csv_name = CSVNames.csv_basic_album_apple_failed
+        
+
+
     def produce_song_remake_values_deezer(self, value_list:list=[], value_check:bool=False, value_type:str='', value_name:str='') -> list:
         """
-        Method which is dedicated to produce dataframe of the return and to stroe it in the dataframe if it is necessary
+        Method which is dedicated to produce dataframe of the return and to store it in the dataframe if it is necessary
         Input:  value_list = value list which would have been successfully created
                 value_check = boolean value to signify that we have already provided 
                 value_type = value which shows which type is going to be searched
@@ -703,21 +724,28 @@ class ParserDefaultCSV:
             loop = asyncio.get_event_loop()
             value_songs, value_found, value_possible, value_failed = loop.run_until_complete(
                 parser_apple.get_produce_apple_music_search(
-                #     value_album[:1], 
-                #     value_artist[:1], 
-                #     value_year[:1], 
-                #     value_id[:1]
-                #     )
-                # )
                     value_album, 
                     value_artist, 
                     value_year, 
                     value_id
                     )
                 )
-                                       
+            value_msg = list(set([i.get('Album Name', '') for i in value_found]))
+            value_msg = '\n'.join([f"+ {f}" for f in value_msg if f])
+            print(f'We found albums:\n{value_msg}')
+            print('-----------------------------------------------------------------------------')
+            value_msg = list(set([f"+ {i.get('Album Name', '')}" if i else '' for i in value_possible]))
+            value_msg = '\n'.join([f for f in value_msg if f])
+            print(f'We possible albums:\n{value_msg}')
+            print('-----------------------------------------------------------------------------')
+            value_msg = '\n'.join(list(set([f"+ {i.get('Album Name', '')}" for i in value_failed])))
+            print(f'We failed to find such albums:\n{value_msg}')
+            print('=============================================================================') 
+            #TODO developed the further values
+            # self.produce_song_remake_values_apple
             print(f'It took time: {time.time() - start}')
             print('#############################################################################')
+
 
     def produce_basic_values_deezer(self, df_calculated:pd.DataFrame=pd.DataFrame()) -> None:
         """

@@ -56,6 +56,10 @@ class CSVNames:
     csv_basic_album_deezer_failed = "Basic_Album_Deezer_Failed.csv"
     csv_basic_album_deezer_possible = "Basic_Album_Deezer_Possible.csv"
     csv_basic_album_deezer_success = "Basic_Album_Deezer_Successful.csv"  
+    #TODO continue work from here
+    csv_basic_album_apple_failed = 'Basic_Album_Apple_Failed.csv'
+    csv_basic_album_apple_possible = 'Basic_Album_Apple_Possible.csv'
+    csv_basic_album_apple_success = 'Basic_Album_Apple_Successful.csv'
 ######################NAME DATABASE########################################
 
 table_user = 'user'

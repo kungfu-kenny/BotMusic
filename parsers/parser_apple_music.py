@@ -189,9 +189,9 @@ class ParserAppleMusic:
         songs, length = [], []
         released, album, artist, artist_link, desc_basic = '', '', '', '', ''
         if link:
-            self.driver.get(link)
+            driver.get(url=link)
             try:
-                WebDriverWait(self.driver, LinkAppleMusic.apple_music_album_wait).until(
+                WebDriverWait(driver, LinkAppleMusic.apple_music_album_wait).until(
                     EC.presence_of_element_located(
                             (
                             By.CSS_SELECTOR, 
@@ -237,26 +237,10 @@ class ParserAppleMusic:
                 f.text 
                 for f in 
                 driver.find_elements_by_css_selector('div.songs-list-row__song-name')
-                # WebDriverWait(self.driver, LinkAppleMusic.apple_music_album_wait).until(
-                #     EC.presence_of_all_elements_located(
-                #         (
-                #         By.CSS_SELECTOR, 
-                #         'div.songs-list-row__song-name'
-                #         )
-                #     )
-                # )
             ]
             length = [
                 f.get_attribute('datetime') for f in 
                 driver.find_elements_by_css_selector('time.songs-list-row__length')
-                # WebDriverWait(self.driver, LinkAppleMusic.apple_music_album_wait).until(
-                #     EC.presence_of_all_elements_located(
-                #         (
-                #         By.CSS_SELECTOR, 
-                #         'time.songs-list-row__length'
-                #         )
-                #     )
-                # )
             ]
         
         driver.close()
@@ -307,7 +291,6 @@ class ParserAppleMusic:
         self.driver.quit()
         
         value_successful, value_possible, value_failed = self.produce_check_parsed(results_search)
-        # self.driver = webdriver.Chrome(self.chromedriver, options=self.options)
         
         tasks = [
             asyncio.create_task(
@@ -318,18 +301,11 @@ class ParserAppleMusic:
             ) 
             for f in value_successful
         ]
-        value_songs = await asyncio.gather(*tasks)
-        
-        # value_songs = [
-        #     await self.make_html_links_song_test(
-        #         f.get('Album Link'),
-        #         f.get('ID')
-        #     )
-        #     for f in value_successful
-        # ]
-        
-        # self.driver.close()
-        # self.driver.quit()
-        pprint(value_songs)
-        
+        semaphore = asyncio.Semaphore(LinkAppleMusic.apple_music_semaphore_threads)
+        async with semaphore:
+            value_songs = await asyncio.gather(*tasks)
+        value_songs = [
+            f for f in value_songs 
+            if f.get('Album Name') or f.get('Artist Name')
+        ]
         return value_songs, value_successful, value_possible, value_failed 
