@@ -251,3 +251,78 @@ class ParserDeezer:
         tasks = [asyncio.create_task(self.produce_search_album_songs_parameters(html, link)) for html, link in zip(value_return, links_successfull)]
         parsed_albums = await asyncio.gather(*tasks)
         return parsed_albums, value_list_successfull, value_list_possible, list_non_found
+
+    async def produce_search_selected(self, searched:str, searched_type:int=0) -> list:
+        """
+        Method which is dedicated to search values of the selected values
+        Input:  searched = string which was previously used
+                searched_type = integer value which is dedicated to return selected values
+        Output: dictionary with a selected values
+        """
+        searched = await self.get_value_translate(searched)
+        if searched_type == 0:
+            link = "/".join([self.link_search_begin, searched, LinkDeezer.link_deezer_track]).strip()
+        elif searched_type == 1:
+            link = "/".join([self.link_search_begin, searched, LinkDeezer.link_deezer_album]).strip()
+        async with aiohttp.ClientSession(trust_env=True) as session:
+            html = await self.parse_deezer_manually_link(session, link)
+        if len(html) < 1000:
+            return []
+        soup = BeautifulSoup(html, "html.parser")
+        check = soup.find("div", {"class":"hidden"})
+        check = check.find("script")
+        check = str(check).split('</script>')[0]  if check else ''
+        if not check:
+            return []
+        value_list = json.loads(check.split('window.__DZR_APP_STATE__ = ')[-1])
+        #TODO add here values to the selected variations
+        value_result = []
+        if searched_type == 0:
+            value_list = value_list.get('TRACK', [])
+            for element in value_list.get('data', []):
+                duration = element.get('DURATION', '0')
+                album_id = element.get('ALB_ID', '0')
+                album_title = element.get('ALB_TITLE', '')
+                song_id = element.get("SNG_ID", 0)
+                song_title = element.get('SNG_TITLE', '')
+                [
+                    value_result.append(
+                        {
+                            'duration': duration,
+                            'album_id': int(album_id),
+                            'album_title': album_title,
+                            'song_id': int(song_id),
+                            'song_title': song_title,
+                            'artist_id': art.get('ART_ID', '0'),
+                            'artist_name': art.get('ART_NAME', '')
+                        }
+                    ) 
+                    for art in element.get('ARTISTS', [])
+                ]
+        elif searched_type == 1:
+            value_list = value_list.get('ALBUM', [])
+            for element in value_list.get('data', []):
+                number_track = element.get('NUMBER_TRACK', '0')
+                album_id = element.get('ALB_ID', '0')
+                album_title = element.get('ALB_TITLE', '')
+                song_id = element.get("SNG_ID", 0)
+                song_title = element.get('SNG_TITLE', '')
+                [
+                    value_result.append(
+                        {
+                            'number_track': int(number_track),
+                            'album_id': int(album_id),
+                            'album_title': album_title,
+                            'artist_id': art.get('ART_ID', '0'),
+                            'artist_name': art.get('ART_NAME', '')
+                        }
+                    ) 
+                    for art in element.get('ARTISTS', [])
+                ]
+        """
+        POST
+        https://www.deezer.com/ajax/gw-light.php?method=search.music
+        &input=3&api_version=1.0&api_token=gFTvC-2y1IvJbygdfHlJLkDrfgUuK3Rk&cid=805278997
+        """
+        return value_result
+

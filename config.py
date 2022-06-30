@@ -8,11 +8,17 @@ load_dotenv()
 link_webdriver = os.getenv("LINK_WEBDRIVER")
 ######################BLOCK TELEGRAM BASIC#################################
 
-bot_key = os.getenv('BOT_KEY')
-chat_id_default = os.getenv('CHAT_ID_DEFAULT')
+@dataclass
+class BotDefault:
+    key = os.getenv('BOT_KEY')
+    chat_id = os.getenv('CHAT_ID_DEFAULT')
 #######################BLOCK TELEGRAM ROUTES###############################
 
-telegram_start = 'start'
+@dataclass
+class Telegram:
+    start = 'start'
+    history = 'history'
+    settings = 'settings'
 ######################BLOCK FOLDERS########################################
 
 @dataclass
@@ -113,6 +119,7 @@ class LinkDeezer:
     link_deezer = 'https://www.deezer.com'
     link_deezer_us = 'us'
     link_deezer_album = 'album'
+    link_deezer_track = 'track'
     link_deezer_search = 'search'
     link_deezer_space = '%20'
     link_deezer_dollar = '%24'
