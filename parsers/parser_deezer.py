@@ -1,5 +1,6 @@
 import re
 import json
+from sys import api_version
 import aiohttp
 import asyncio
 from pprint import pprint
@@ -252,6 +253,41 @@ class ParserDeezer:
         parsed_albums = await asyncio.gather(*tasks)
         return parsed_albums, value_list_successfull, value_list_possible, list_non_found
 
+    @staticmethod
+    async def parse_api_manually(session, params:dict, json:dict) -> list:
+        """
+        Static method which is dedicated to make the 
+        """
+        link = 'https://www.deezer.com/ajax/gw-light.php'
+        async with session.post(link, params=params, json=json) as r:
+            if r.status == 200:
+                return await r.json()
+            return {}
+            
+    async def produce_additional_values(self, session:object, number:int=20, search:str='TRACK') -> list:
+        """
+        Method which is dedicated to get the values of the further values after
+        Input:  number = number from which to start values
+        Output: list of the selected values to the albums/songs
+        """
+        check = await self.parse_api_manually(
+            session,
+            {
+                'method': 'search.music',
+                'input': 3,
+                'api_version': '1.0',
+                'api_token': 't8Ilg-ewN7R~PhvaJaJ3dbz.ieF~OmOv',
+                'cid': 655040220
+            },
+            {
+                "query":"eminem",
+                "start":43,
+                "nb": 40,
+                "filter":"all",
+                "output":"TRACK"
+            }
+        )
+        
     async def produce_search_selected(self, searched:str, searched_type:int=0) -> list:
         """
         Method which is dedicated to search values of the selected values
@@ -319,10 +355,5 @@ class ParserDeezer:
                     ) 
                     for art in element.get('ARTISTS', [])
                 ]
-        """
-        POST
-        https://www.deezer.com/ajax/gw-light.php?method=search.music
-        &input=3&api_version=1.0&api_token=gFTvC-2y1IvJbygdfHlJLkDrfgUuK3Rk&cid=805278997
-        """
         return value_result
 
