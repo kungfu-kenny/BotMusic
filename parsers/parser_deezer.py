@@ -311,7 +311,6 @@ class ParserDeezer:
         if not check:
             return []
         value_list = json.loads(check.split('window.__DZR_APP_STATE__ = ')[-1])
-        #TODO add here values to the selected variations
         value_result = []
         if searched_type == 0:
             value_list = value_list.get('TRACK', [])

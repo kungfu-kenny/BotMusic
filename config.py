@@ -66,31 +66,14 @@ class CSVNames:
     csv_basic_album_apple_failed = 'Basic_Album_Apple_Failed.csv'
     csv_basic_album_apple_possible = 'Basic_Album_Apple_Possible.csv'
     csv_basic_album_apple_success = 'Basic_Album_Apple_Successful.csv'
-######################NAME DATABASE########################################
-
-table_user = 'user'
-table_song = 'song'
-table_label = 'label'
-table_album = 'album'
-table_genre = 'genre'
-table_artist = 'artist'
-table_song_year = 'song_year'
-table_song_genre = 'song_genre'
-table_song_label = 'song_label'
-table_album_song = 'album_song'
-table_album_year = 'album_year'
-table_album_label = 'album_label'
-table_album_genre = 'album_genre'
-table_artist_song = 'artist_song'
-table_genre_label = 'genre_label'
-table_artist_genre = 'artist_genre'
-table_artist_label = 'artist_label'
-table_artist_album = 'artist_album'
-table_song_youtube = 'song_youtube'
-table_user_history_song = 'user_history_song'
-table_user_history_album = 'user_history_album'
-table_user_favourite_song = 'user_favourite_song'
-table_user_favourite_album = 'user_favourite_album'
+#######################MONGO DATABASE######################################
+@dataclass
+class DataBaseCredentialsMongo:
+    host = ''
+    base = ''
+    port = ''
+    name = ''
+    pawd = ''
 #######################PARSE GENIUS########################################
 
 @dataclass
