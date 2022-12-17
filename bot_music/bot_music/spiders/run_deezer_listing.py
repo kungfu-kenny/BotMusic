@@ -89,6 +89,7 @@ class DeezerListing(Spider):
                     training = training,
                 )
 
+
     def parse(self, response):
 
         #1. Parsing the songs to the files
