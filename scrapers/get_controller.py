@@ -47,9 +47,10 @@ def get_file_song_server(song_id:int) -> dict:
     value_use = [] #TODO test data
 
 def get_file_album_server(album_id:int, sender:int='test') -> dict:
-    value_use_album = parse_album_songs(album_id)
     value_result = {}
-    for index, i in enumerate(value_use_album):
+    for index, i in enumerate(
+        parse_album_songs(album_id)
+    ):
         track_youtube = get_links_filtered(
             get_links_search(
                 track_name:=f"{i.get('artist_name')} - {i.get('song_title')}"
