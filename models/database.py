@@ -1,6 +1,8 @@
 import sqlite3
 from contextlib import contextmanager
 
+#TODO fix connection absence
+CHUNKS_N = 250
 
 @contextmanager
 def get_connection():
@@ -8,6 +10,12 @@ def get_connection():
         con = sqlite3.connect("tutorial.db")
     finally:
         con.close()
+
+def make_list_chunk(value_list:list, n:int=CHUNKS_N) -> list:
+    def divide_chunks(l, n):    
+        for i in range(0, len(l), n): 
+            yield l[i:i + n]
+    return list(divide_chunks(value_list, n))
 
 def develop_database_basic():
     with get_connection() as conn:
@@ -88,9 +96,77 @@ def develop_database_basic():
         )
         conn.commit()
 
-def select_songs() -> None:
-    pass
+def select_song(song_dict:dict, conn=None) -> list:
+    with get_connection() as conn:
+        cur = conn.cursor()
+        usage = cur.execute(
+            f"SELECT * FROM songs WHERE id={song_dict['song_id']};"
+        ).fetchone()
+    return usage if usage else []
 
-def insert_songs() -> None:
-    pass
+def select_songs(song_list:list, conn=None) -> list:
+    if len(song_list) > CHUNKS_N:
+            song_list = make_list_chunk(song_list)
+    else:
+        song_list = [song_list]
+    with get_connection() as conn:
+        cur = conn.cursor()
+        usage = []
+        for song_chunk in song_list:
+            if (
+                new:=cur.execute(
+                    f"""
+                    SELECT * FROM songs WHERE id IN(
+                        {','.join(i['song_id'] for i in song_chunk)}
+                    );
+                    """
+                ).fetchall()
+            ):
+                usage.append(new)
+    return usage
 
+def insert_song_album(song_list:list, conn=None) -> None:
+    with get_connection() as conn:
+        cur = conn.cursor()
+        for song_dict in song_list:
+            cur.execute(
+                f"""
+                INSERT INTO albums_songs(id_album, id_song)
+                VALUES ({song_dict['album_id']}, {song_dict['song_id']})
+                WHERE NOT EXIST (
+                    SELECT * FROM albums_songs
+                    WHERE id_album = {song_dict['album_id']} AND id_song = {song_dict['song_id']}
+                );
+                """
+            )
+        conn.commit()
+
+def insert_album(album_list:dict, conn=None) -> None:
+    with get_connection() as conn:
+        cur = conn.cursor()
+        for album_dict in album_list:
+            cur.execute(
+                f"""
+                INSERT INTO albums(id, name)
+                """
+            )
+        conn.commit()
+def insert_song(song_list:list, conn=None) -> None:
+    with get_connection() as conn:
+        cur = conn.cursor()
+        # cur.execute(
+        #     f"""
+        #     INSERT INTO songs 
+        #     """
+        # )
+        # conn.commit()
+
+def insert_songs(song_dict:dict, conn=None) -> None:
+    with get_connection() as conn:
+        cur = conn.cursor()
+        # cur.execute(
+        #     f"""
+            
+        #     """
+        # )
+        # conn.commit()

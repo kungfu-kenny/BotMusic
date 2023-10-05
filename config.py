@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 #RETRY BLOCK
 MAX_RETRY_COUNT = 3
@@ -9,8 +12,24 @@ PATH_STORAGE = os.path.join(
     PATH_USE,
     'storage',
 )
-#'/home/oshevchenko/Projects/BotMusic/storage/'
 
-#CALLBACKS_TELEGRAM_BLOCK
-CALLBACK_SONG = 101
-CALLBACK_ALBUM = 102
+#BOT TELEGRAM TOKEN
+API_TOKEN = os.getenv("BOT_KEY")
+ALLOWED = [
+    os.getenv("CHAT_ID_DEFAULT"),
+]
+
+
+CALLBACKS = {
+    #CALLBACKS TELEGRAM BLOCK
+    "CALLBACK_SONG": '101',
+    "CALLBACK_ALBUM": '102',
+
+    #CALLBACK SONG TO PREVIOUS AND NEXT MENU
+    "CALLBACK_SONG_MENU_PREV": '110',
+    "CALLBACK_SONG_MENU_NEXT": '111',
+
+    #CALLBACK ALBUM TO PREVIOUS AND NEXT MENU
+    "CALLBACK_ALBUM_MENU_PREV": '210',
+    "CALLBACK_ALBUM_MENU_NEXT": '211',
+}
