@@ -28,8 +28,8 @@ def get_list_selection(
             # TODO think about the working on the titles
             value_return_telegram.update(
                 {
-                    # f"{CALLBACK_SONG}_{element.get('song_id')}_{element.get('duration')}": {
-                    f"{CALLBACKS['CALLBACK_SONG']}_{element.get('song_id')}": {
+                    f"{CALLBACKS['CALLBACK_SONG']}_{element.get('song_id')}_{element.get('duration')}": {
+                    # f"{CALLBACKS['CALLBACK_SONG']}_{element.get('song_id')}": {
                         "index": i + 1,
                         "name": f"{element.get('artist_name')} - {element.get('song_title')}",
                         "duration": _produce_duration_inverse(element.get("duration")),
@@ -49,8 +49,29 @@ def get_list_selection(
     return value_return_telegram
 
 
-def get_file_song_server(song_id: int) -> dict:
-    value_use = []  # TODO test data
+def get_file_song_server(
+        song_id: int,
+        track_name: str,
+        duration: int,
+        sender: int = 'test',
+    ) -> dict:
+    value_result = {}  # TODO test data
+    track_youtube = get_links_filtered(
+        get_links_search(track_name),
+        track_name,
+        duration,
+    )
+    track_youtube_downloaded = produce_file_download_internet(
+        track_youtube.get("url"),
+        sender,
+        0,
+    )
+    if not len(track_youtube_downloaded.keys()) == 1:
+        raise
+    track_name_uuid = list(track_youtube_downloaded.keys())[0]
+    track_youtube_downloaded[track_name_uuid].update(track_youtube)
+    value_result.update(track_youtube_downloaded)
+    return value_result
 
 
 def get_file_album_server(album_id: int, sender: int = "test") -> dict:

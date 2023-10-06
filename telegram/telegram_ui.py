@@ -21,6 +21,20 @@ from utilities.utilities_ui import (
 )
 
 
+async def _send_files_telegram(value_dict_songs:dict):
+    for file_name_ext, file_value_dict in value_dict_songs.items():
+        title = file_value_dict['title'] \
+            if not file_value_dict.get('name_searched') else file_value_dict['name_searched']
+        with open(_get_music_file(file_name_ext), "rb") as music_file:
+            await bot.send_audio(
+                file_value_dict['sender'],
+                audio=music_file,
+                title=title,
+            )
+    for file_name_ext in value_dict_songs.keys():
+        _get_music_file(file_name_ext, False)
+
+
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: Message):
     """
@@ -111,36 +125,34 @@ async def update_reply_markup_song_next(call:CallbackQuery) -> None:
 
 @dp.callback_query_handler(CheckMessageSelectSongFilter())
 async def send_song_value(call:CallbackQuery) -> None:
-    print(call.data)
-    print('555555555555555555555555555555555555555555555555')
-    value_index = call.data.split('_')[-1]
-    song_value = get_file_song_server(value_index)
-    print(song_value)
-    print('66666666666666666666666666666666666666666666666666666666')
+    value_id, duration = call.data.split('_')[1:]
+    duration = int(duration)
+    track_name = None
+    for element_inline in call.message.reply_markup["inline_keyboard"][1:-1]:
+        for name in element_inline[:1]:
+            if name.callback_data == call.data:
+                track_name = name.text.strip()
+                break
+    if track_name:
+        await bot.send_message(
+            call.message.chat.id,
+            f"Your song: \nhttps://www.deezer.com/us/track/{value_id}"
+        )
+        value_dict_songs = get_file_song_server(
+            value_id,
+            track_name,
+            duration,
+            call.message.chat.id,
+        )
+        await _send_files_telegram(value_dict_songs)
 
 
 @dp.callback_query_handler(CheckMessageSelectAlbumFilter())
 async def send_album_value(call: CallbackQuery) -> None:
-    print(call.data)
-    print('555555555555555555555555555555555555555555555555')
-    print(call.message.chat.id)
-    print('66666666666666666666666666666666666666666666666666')
     value_id = call.data.split('_')[-1]
     await bot.send_message(
         call.message.chat.id,
         f"Your album: \nhttps://www.deezer.com/us/album/{value_id}"
     )
     value_dict_songs = get_file_album_server(value_id, call.message.chat.id)
-
-    for file_name_ext, file_value_dict in value_dict_songs.items():
-        title = file_value_dict['title'] \
-            if not file_value_dict.get('name_searched') else file_value_dict['name_searched']
-        with open(_get_music_file(file_name_ext), "rb") as music_file:
-            await bot.send_audio(
-                file_value_dict['sender'],
-                audio=music_file,
-                title=title,
-            )
-        #TODO remove values
-    for file_name_ext in value_dict_songs.keys():
-        _get_music_file(file_name_ext, False)
+    await _send_files_telegram(value_dict_songs)
