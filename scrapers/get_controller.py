@@ -29,7 +29,7 @@ def get_list_selection(
             value_return_telegram.update(
                 {
                     f"{CALLBACKS['CALLBACK_SONG']}_{element.get('song_id')}_{element.get('duration')}": {
-                    # f"{CALLBACKS['CALLBACK_SONG']}_{element.get('song_id')}": {
+                        # f"{CALLBACKS['CALLBACK_SONG']}_{element.get('song_id')}": {
                         "index": i + 1,
                         "name": f"{element.get('artist_name')} - {element.get('song_title')}",
                         "duration": _produce_duration_inverse(element.get("duration")),
@@ -50,11 +50,11 @@ def get_list_selection(
 
 
 def get_file_song_server(
-        song_id: int,
-        track_name: str,
-        duration: int,
-        sender: int = 'test',
-    ) -> dict:
+    song_id: int,
+    track_name: str,
+    duration: int,
+    sender: int = "test",
+) -> dict:
     value_result = {}  # TODO test data
     track_youtube = get_links_filtered(
         get_links_search(track_name),

@@ -11,11 +11,9 @@ def get_text_message(message: object) -> str:
     pass
 
 
-def _split_list_selected(value_list: list, chunk: int=5) -> list:
+def _split_list_selected(value_list: list, chunk: int = 5) -> list:
     "Return list of lists with selected chunks"
-    return [
-        value_list[i:i+chunk] for i in range(0, len(value_list), chunk)
-    ]
+    return [value_list[i : i + chunk] for i in range(0, len(value_list), chunk)]
 
 
 def _get_reply_keyboard_basic() -> object:
@@ -24,26 +22,18 @@ def _get_reply_keyboard_basic() -> object:
         one_time_keyboard=False,
         keyboard=[
             [
-                InlineKeyboardButton(
-                    text='Search song'
-                ),
-                InlineKeyboardButton(
-                    text='Search Album'
-                ),
+                InlineKeyboardButton(text="Search only song"),
             ],
             [
-                InlineKeyboardButton(
-                    text='History',
-                ),
-                InlineKeyboardButton(
-                    text='Settings',
-                ),
+                InlineKeyboardButton(text="Search only albums"),
             ],
-        ]
+        ],
     )
 
 
-def _get_inline_keyboard(value_dict: dict, keyboard_type: str, value_index: int = 0) -> object:
+def _get_inline_keyboard(
+    value_dict: dict, keyboard_type: str, value_index: int = 0
+) -> object:
     inline_keyboard = _split_list_selected(
         [
             [
@@ -73,7 +63,7 @@ def _get_inline_keyboard(value_dict: dict, keyboard_type: str, value_index: int 
         value_prev = value_prev % len(inline_keyboard)
     value_number = f"{value_index + 1} / {len(inline_keyboard)}"
     inline_keyboard = inline_keyboard[value_index]
-    if keyboard_type == 'album':
+    if keyboard_type == "album":
         inline_keyboard.insert(
             0,
             [
@@ -99,7 +89,7 @@ def _get_inline_keyboard(value_dict: dict, keyboard_type: str, value_index: int 
                 ),
             ]
         )
-    elif keyboard_type == 'song':
+    elif keyboard_type == "song":
         inline_keyboard.insert(
             0,
             [
@@ -131,12 +121,12 @@ def _get_inline_keyboard(value_dict: dict, keyboard_type: str, value_index: int 
 def get_menu_album(value_dict: dict, value_index: int) -> object:
     return InlineKeyboardMarkup(
         row_width=3,
-        inline_keyboard=_get_inline_keyboard(value_dict, 'album', value_index),
+        inline_keyboard=_get_inline_keyboard(value_dict, "album", value_index),
     )
 
 
 def get_menu_song(value_dict: dict, value_index: int) -> object:
     return InlineKeyboardMarkup(
         row_width=3,
-        inline_keyboard=_get_inline_keyboard(value_dict, 'song', value_index),
+        inline_keyboard=_get_inline_keyboard(value_dict, "song", value_index),
     )

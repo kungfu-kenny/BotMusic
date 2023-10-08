@@ -38,8 +38,6 @@ def get_links_filtered(
             or all(not live in i.lower() for i in [value_name, i.get("title")])
         )
     ):
-        print(element)
-        print("44444444444444444444444444444444444444444444444444444444")
         element.update(
             {
                 "sequence": _get_similar_strings(
