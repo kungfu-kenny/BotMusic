@@ -1,9 +1,6 @@
 import sqlite3
 from contextlib import contextmanager
 
-# TODO fix connection absence
-CHUNKS_N = 250
-
 
 @contextmanager
 def get_connection():
@@ -61,5 +58,7 @@ def select_album_search(user_id: int) -> bool:
 def change_album_search(user_id: int, new_bool: bool) -> None:
     with get_connection() as conn:
         cur = conn.cursor()
-        cur.execute(f"update users set use_songs={new_bool} where id={user_id};")
+        cur.execute(
+            f"update users set use_songs={new_bool} where id={user_id} and use_songs != {new_bool};"
+        )
         conn.commit()

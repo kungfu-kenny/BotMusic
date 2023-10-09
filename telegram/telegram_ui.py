@@ -160,5 +160,7 @@ async def send_random_text(message: Message) -> None:
         value_search = get_list_selection(text_use, value_song)
         await message.reply(
             f"Check song `{text_use}`" if value_song else f"Check album `{text_use}`",
-            reply_markup=get_menu_song(value_search, 0),
+            reply_markup=get_menu_song(value_search, 0)
+            if value_song
+            else get_menu_album(value_search, 0),
         )
